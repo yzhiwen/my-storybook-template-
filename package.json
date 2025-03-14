@@ -82,6 +82,8 @@
     "react-dom": "^19.0.0"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/utilities": "^3.2.2",
     "gsap": "^3.12.7",
     "rxjs": "^7.8.2",
     "rxjs-spy": "^8.0.2"
