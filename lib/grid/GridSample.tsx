@@ -2,9 +2,10 @@ import GridFlip from "./GridFlip"
 import GridArea from "./GridArea"
 import GridItemDnd from "./GridItemDnd"
 import GridItemDndFlip from "./GridItemDndFlip"
+import GridItemDndResize from "./GridItemDndResize"
 
 type Props = {
-    type?: "arem" | "grid-item-dnd" | "grid-item-flip" | "grid-item-dnd-flip"
+    type?: "arem" | "grid-item-dnd" | "grid-item-flip" | "grid-item-dnd-flip" | "grid-item-dnd-resize"
 }
 
 export default function (props: Props) {
@@ -15,6 +16,7 @@ export default function (props: Props) {
         case 'grid-item-dnd': return <GridItemDnd />
         case 'grid-item-flip': return <GridFlip />
         case "grid-item-dnd-flip": return <GridItemDndFlip />
+        case "grid-item-dnd-resize": return <GridItemDndResize />
     }
 
     return <div className="w-100 grid grid-cols-4 gap-4">

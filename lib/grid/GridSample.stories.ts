@@ -35,3 +35,9 @@ export const GridItemDND: Story = {
         type: 'grid-item-dnd'
     }
 };
+
+export const GridItemDNDResize: Story = {
+    args: {
+        type: 'grid-item-dnd-resize'
+    }
+};
