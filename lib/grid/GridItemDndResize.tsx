@@ -1,32 +1,52 @@
 import { DndContext, DragOverlay, useDraggable, type DragEndEvent, type DragMoveEvent, type DragStartEvent } from "@dnd-kit/core";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import useResizable from "../dnd/useResizable";
+import classNames from "classnames";
 
-export default function () {
+type GridProps = {
+    row?: number
+    col?: number
+    gap?: number
+    items?: GridItem[]
+}
+
+type GridItem = {
+    rowStart?: number
+    colStart?: number
+    rowEnd?: number
+    colEnd?: number
+}
+
+const TestGridItems: GridItem[] = [
+    {}, { rowStart: 2, colStart: 3, rowEnd: 3, colEnd: 4 }, {}
+]
+
+export default function (props: GridProps) {
+    const { row = 5, col = 10, gap, items = TestGridItems } = props
     const [activeId, setActiveId] = useState<any>(null);
+    const [activeArea, setActiveArea] = useState<any>(null);
     const [activeStyle, setActiveStyle] = useState<any>(null)
-    const [finalStyle, setfinalStyle] = useState<any>(null)
+    const [gridItems, setGridItems] = useState<GridItem[]>(items ?? [])
 
     return <DndContext onDragStart={handleDragStart} onDragMove={handleDragMove} onDragEnd={handleDragEnd}>
-        <div id='grid-c' className="grid w-[500px] h-[300px] grid-cols-10 grid-rows-5 bg-amber-200">
-            <GridItem id="grid-item" style={finalStyle} onResizeEnd={onGridItemResizeEnd} />
-            <GridItem id="grid-item-2" className="bg-blue-500 col-start-2 col-end-8" onResizeEnd={onGridItemResizeEnd} />
+        <div id='grid-c'
+            className={classNames(
+                `grid w-[500px] h-[300px] bg-amber-200`,
+                `grid-cols-${col} grid-rows-${row}`,
+            )}>
+            {gridItems.map((item, index) => {
+                return <GridItem id={`grid-item-${index}`} key={index} {...item} onResizeEnd={onGridItemResizeEnd}>{index}</GridItem>
+            })}
         </div>
         <DragOverlay>
-            {activeId ? <GridItem style={activeStyle} eEnd={onGridItemResizeEnd} /> : null}
+            {activeId ? <GridItemOverlay id="grid-item-overlay" className="bg-blue-200" style={activeStyle} /> : null}
         </DragOverlay>
     </DndContext>
 
-
     function handleDragStart(event: DragStartEvent) {
-        setActiveId(event.active.id);
+        // console.log("on start", event)
         const target = event.activatorEvent.target as HTMLElement
-
-        console.log('>>>handleDragStart', event, {
-            ...activeStyle,
-            width: target.getBoundingClientRect().width,
-            height: target.getBoundingClientRect().height,
-        })
+        setActiveId(event.active.id);
         setActiveStyle({
             ...activeStyle,
             width: target.getBoundingClientRect().width,
@@ -35,10 +55,19 @@ export default function () {
     }
 
     function handleDragEnd(event: DragEndEvent) {
+        // console.log("on end", event)
         setActiveId(null);
-        setActiveStyle(null)
-        setfinalStyle(activeStyle)
-        console.log('>>>', activeStyle)
+        setActiveStyle(null);
+        setActiveArea(null);
+        setGridItems((items) => {
+            const items_ = items.map((item, index) => {
+                if (event.active.id === `grid-item-${index}`) {
+                    return { ...activeArea }
+                }
+                return item
+            })
+            return items_
+        })
     }
 
     function onGridItemResizeEnd({ id }: any) {
@@ -57,16 +86,15 @@ export default function () {
             x: crect.x, y: crect.y, width: crect.width, height: crect.height,
             itemX: lastest.x, itemY: lastest.y, itemWidth: lastest.width, itemHeight: lastest.height
         })
-        console.log(">>>onGridItemResizeEnd", id, area, {
-            ...activeStyle,
-            gridArea: `${area.rowStart} / ${area.colStart} / ${area.rowEnd} / ${area.colEnd}`
-        })
 
-        setfinalStyle({
-            ...activeStyle,
-            width: undefined,
-            height: undefined,
-            gridArea: `${area.rowStart} / ${area.colStart} / ${area.rowEnd} / ${area.colEnd}`
+        setGridItems((items) => {
+            const items_ = items.map((item, index) => {
+                if (id === `grid-item-${index}`) {
+                    return { ...area }
+                }
+                return item
+            })
+            return items_
         })
     }
 
@@ -75,11 +103,6 @@ export default function () {
         const { x: deltaX, y: deltaY } = event.delta
         const c = document.getElementById('grid-c')!
         const item = event.activatorEvent.target as HTMLElement
-        // on move 
-        // {"x":235.5,"y":20.5,"width":500,"height":300,"top":20.5,"right":735.5,"bottom":320.5,"left":235.5} 
-        // {"x":285.5,"y":80.5,"width":100,"height":120,"top":80.5,"right":385.5,"bottom":200.5,"left":285.5}
-        // console.log('on move', JSON.stringify(c.getBoundingClientRect()), JSON.stringify(item.getBoundingClientRect()))
-        // console.log("on move", deltaX, deltaY)
 
         const crect = c.getBoundingClientRect()
         const rect = item.getBoundingClientRect()
@@ -90,15 +113,15 @@ export default function () {
             left: rect.left + deltaX, top: rect.top + deltaY,
             right: rect.right + deltaX, bottom: rect.bottom + deltaY,
         }
-
         const area = calcGridItemArea({
-            row: 5, col: 10,
+            row, col,
             x: crect.x, y: crect.y, width: crect.width, height: crect.height,
             itemX: lastest.x, itemY: lastest.y, itemWidth: lastest.width, itemHeight: lastest.height
         })
+        setActiveArea(area)
         setActiveStyle({
             ...activeStyle,
-            gridArea: `${area.rowStart} / ${area.colStart} / ${area.rowEnd} / ${area.colEnd}`
+            gridArea: area["grid-area"]
         })
     }
 }
@@ -118,7 +141,8 @@ type GridAreaCalc = {
     itemWidth: number
     itemHeight: number
 }
-function calcGridItemArea(options: GridAreaCalc) {
+type GridAreaCalcResult = { rowStart: number, rowEnd: number, colStart: number, colEnd: number, 'grid-area': string, }
+function calcGridItemArea(options: GridAreaCalc): GridAreaCalcResult {
     const rowSize = options.height / options.row
     const colSize = options.width / options.col
 
@@ -157,11 +181,29 @@ function calcGridItemArea(options: GridAreaCalc) {
     // }
     return {
         rowStart, rowEnd, colStart, colEnd,
+        'grid-area': `${rowStart} / ${colStart} / ${rowEnd} / ${colEnd}`
     }
 }
 
-function GridItem(props: any) {
-    const { centered, onResizeEnd } = props
+type GridItemProps = {
+    id: string
+
+    style?: React.CSSProperties
+    className?: string
+
+    rowStart?: number
+    colStart?: number
+    rowEnd?: number
+    colEnd?: number
+    children?: any
+
+    onResizeStart?: (data: { id: string, width?: number, height?: number }) => void
+    onResizeMove?: (data: { id: string, width?: number, height?: number }) => void
+    onResizeEnd?: (data: { id: string, width?: number, height?: number }) => void
+}
+
+function GridItem(props: GridItemProps) {
+    const { rowStart, colStart, rowEnd, colEnd, onResizeEnd } = props
 
     const [size, setSize] = useState<{ width: number, height: number } | undefined>()
     const [isResizing, setIsResizing] = useState(false)
@@ -169,6 +211,7 @@ function GridItem(props: any) {
     const { node, attributes, listeners, setNodeRef, transform } = useDraggable({
         id: props.id,
         disabled: isResizing,
+        data: {}, // 在drag过程中无法修改
     });
 
     const { listeners: resizeListeners } = useResizable({
@@ -186,14 +229,18 @@ function GridItem(props: any) {
         },
     })
 
-    return <div ref={setNodeRef} {...listeners} {...attributes}
-        className=" relative grid-item grid bg-blue-200"
+    return <div
+        ref={setNodeRef}
+        {...listeners}
+        {...attributes}
+        className="relative grid-item grid bg-blue-200"
         {...props}
         style={{
-            // gridArea: '5 / 3 / 7 / 6',
+            ...(rowStart && colStart && rowEnd && colEnd ? { gridArea: `${rowStart} / ${colStart} / ${rowEnd} / ${colEnd}` } : {}),
             ...(props?.style ?? {}),
             ...(size ? { width: `${size.width}px`, height: `${size.height}px` } : {}),
         }}>
+        {props.children}
         <div
             className="resize-handle"
             {...resizeListeners}
@@ -208,4 +255,8 @@ function GridItem(props: any) {
             }}
         ></div>
     </div>
+}
+
+function GridItemOverlay(props: any) {
+    return <div {...props}></div>
 }

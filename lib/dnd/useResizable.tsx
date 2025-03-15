@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from "react";
 
 // TODO
 // 加上，resize间隔效果，resize方向，参考：https://mikkelwestermann.github.io/react-use-resizable/
+// TODO
+// 改写成不用resizeRef，看看dndkit内部是怎么流转的
+// 例如添加ResizeContext
 type UseResizableProps = {
     resizeRef?: React.RefObject<HTMLElement | null>
     centered?: boolean
