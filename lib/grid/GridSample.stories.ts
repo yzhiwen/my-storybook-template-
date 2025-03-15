@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
-import View from './GridSample1';
+import View from './GridSample';
 
 const meta = {
-    title: 'Components/GridSample1',
+    title: 'Components/GridSample',
     component: View,
     parameters: {
         layout: 'centered',
@@ -14,7 +14,7 @@ export default meta;
 
 type Story = StoryObj<typeof View>;
 
-export const DefaultView: Story = {
+export const GridSample: Story = {
     args: {
     }
 };
