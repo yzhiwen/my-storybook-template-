@@ -19,3 +19,9 @@ export const ViewSample1: Story = {
         type: 'resizable',
     }
 };
+
+export const UseResizable: Story = {
+    args: {
+        type: 'UseResizable',
+    }
+};
