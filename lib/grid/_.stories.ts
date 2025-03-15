@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
-import View from './GridSample';
+import View from './_';
 
 const meta = {
     title: 'Components/GridSample',
@@ -30,13 +30,13 @@ export const GridItemFlip: Story = {
     }
 };
 
-export const GridItemDND: Story = {
+export const GridItemDnd: Story = {
     args: {
         type: 'grid-item-dnd'
     }
 };
 
-export const GridItemDNDResize: Story = {
+export const GridItemDndResize: Story = {
     args: {
         type: 'grid-item-dnd-resize'
     }

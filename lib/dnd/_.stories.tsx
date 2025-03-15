@@ -14,7 +14,7 @@ export default meta;
 
 type Story = StoryObj<typeof View>;
 
-export const ViewSample1: Story = {
+export const Resizable: Story = {
     args: {
         type: 'resizable',
     }

@@ -1,24 +1,19 @@
 import { DndContext, DragOverlay, useDraggable, type DragEndEvent, type DragMoveEvent, type DragStartEvent } from "@dnd-kit/core";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import useResizable from "../dnd/useResizable";
 
 export default function () {
     const [activeId, setActiveId] = useState<any>(null);
     const [activeStyle, setActiveStyle] = useState<any>(null)
     const [finalStyle, setfinalStyle] = useState<any>(null)
 
-    useEffect(() => {
-        const c = document.getElementById('grid-c')!
-        const item = document.getElementById('grid-item')!
-        // console.log('>>grid container', JSON.stringify(c.getBoundingClientRect()), JSON.stringify(item.getBoundingClientRect()))
-    }, [])
-
     return <DndContext onDragStart={handleDragStart} onDragMove={handleDragMove} onDragEnd={handleDragEnd}>
         <div id='grid-c' className="grid w-[500px] h-[300px] grid-cols-10 grid-rows-5 bg-amber-200">
             <GridItem id="grid-item" style={finalStyle} onResizeEnd={onGridItemResizeEnd} />
-            <GridItem id="grid-item-2" className="bg-blue-500 col-start-2 col-end-8" />
+            <GridItem id="grid-item-2" className="bg-blue-500 col-start-2 col-end-8" onResizeEnd={onGridItemResizeEnd} />
         </div>
         <DragOverlay>
-            {activeId ? <GridItem style={activeStyle} /> : null}
+            {activeId ? <GridItem style={activeStyle} eEnd={onGridItemResizeEnd} /> : null}
         </DragOverlay>
     </DndContext>
 
@@ -165,66 +160,31 @@ function calcGridItemArea(options: GridAreaCalc) {
     }
 }
 
-// resize使用point事件，dndkit使用的是onPointerDown跟onKeyDown，比onMouseDown更快响应
 function GridItem(props: any) {
     const { centered, onResizeEnd } = props
 
     const [size, setSize] = useState<{ width: number, height: number } | undefined>()
     const [isResizing, setIsResizing] = useState(false)
-    const [startSize, setStartSize] = useState({ width: 0, height: 0 })
-    const [startPos, setStartPos] = useState({ x: 0, y: 0 })
 
     const { node, attributes, listeners, setNodeRef, transform } = useDraggable({
         id: props.id,
         disabled: isResizing,
     });
 
-    const handleMouseDown = (e: any) => {
-        e.preventDefault()
-        const target = (e.target as any)?.parentElement as HTMLDivElement
-        setIsResizing(true)
-        setStartSize({ width: target.clientWidth, height: target.clientHeight })
-        setStartPos({ x: e.clientX, y: e.clientY })
-    }
-
-    const handleMouseMove = useCallback(
-        (e: any) => {
-            if (!isResizing) return
-            let factor = centered ? 2 : 1 // 鼠标跟resize-handle出现偏差的处理
-
-            const newWidth = startSize.width + (e.clientX - startPos.x) * factor
-            const newHeight = startSize.height + (e.clientY - startPos.y) * factor
-            setSize({ width: newWidth, height: newHeight })
+    const { listeners: resizeListeners } = useResizable({
+        resizeRef: node,
+        onResizeStart() {
+            setIsResizing(true)
         },
-        [isResizing, startSize, startPos]
-    )
-
-    const handleMouseUp = () => {
-        setIsResizing(false)
-        onResizeEnd?.({ id: props.id })
-        setSize(undefined)
-    }
-
-    useEffect(() => {
-        if (isResizing) {
-            window.addEventListener('mousemove', handleMouseMove)
-            window.addEventListener('mouseup', handleMouseUp)
-            window.addEventListener('pointermove', handleMouseMove)
-            window.addEventListener('pointerup', handleMouseUp)
-        } else {
-            window.removeEventListener('mousemove', handleMouseMove)
-            window.removeEventListener('mouseup', handleMouseUp)
-            window.removeEventListener('pointermove', handleMouseMove)
-            window.removeEventListener('pointerup', handleMouseUp)
-        }
-
-        return () => {
-            window.removeEventListener('mousemove', handleMouseMove)
-            window.removeEventListener('mouseup', handleMouseUp)
-            window.removeEventListener('pointermove', handleMouseMove)
-            window.removeEventListener('pointerup', handleMouseUp)
-        }
-    }, [isResizing, handleMouseMove])
+        onResizeMove(size) {
+            setSize(size)
+        },
+        onResizeEnd(size) {
+            setSize(undefined)
+            setIsResizing(false)
+            onResizeEnd?.({ id: props.id })
+        },
+    })
 
     return <div ref={setNodeRef} {...listeners} {...attributes}
         className=" relative grid-item grid bg-blue-200"
@@ -234,12 +194,9 @@ function GridItem(props: any) {
             ...(props?.style ?? {}),
             ...(size ? { width: `${size.width}px`, height: `${size.height}px` } : {}),
         }}>
-
         <div
             className="resize-handle"
-            onMouseDown={handleMouseDown}
-            onKeyDown={handleMouseDown}
-            onPointerDown={(handleMouseDown)}
+            {...resizeListeners}
             style={{
                 position: 'absolute',
                 bottom: 0,

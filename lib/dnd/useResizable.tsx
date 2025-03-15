@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 
-interface UseResizableProps {
+// TODO
+// 加上，resize间隔效果，resize方向，参考：https://mikkelwestermann.github.io/react-use-resizable/
+type UseResizableProps = {
     resizeRef?: React.RefObject<HTMLElement | null>
     centered?: boolean
 
@@ -9,7 +11,7 @@ interface UseResizableProps {
     onResizeEnd?: (size: { width: number, height: number }) => void
 }
 
-export default function useResizable({ resizeRef, centered, onResizeStart, onResizeEnd }: UseResizableProps) {
+export default function useResizable({ resizeRef, centered, onResizeStart, onResizeMove, onResizeEnd }: UseResizableProps) {
     const [isResizing, setIsResizing] = useState(false);
     const dataRef = useRef<any>({})
 
@@ -33,7 +35,7 @@ export default function useResizable({ resizeRef, centered, onResizeStart, onRes
         const newHeight = startHeight + (e.clientY - startPosY) * factor
         dataRef.current.newWidth = newWidth
         dataRef.current.newHeight = newHeight
-        onResizeEnd?.({ width: dataRef.current.newWidth, height: dataRef.current.newHeight })
+        onResizeMove?.({ width: dataRef.current.newWidth, height: dataRef.current.newHeight })
     }
 
     const handleMouseUp = () => {
