@@ -3,16 +3,20 @@ import GridArea from "./GridArea"
 import GridItemDnd from "./GridItemDnd"
 import GridItemDndFlip from "./GridItemDndFlip"
 import GridItemDndResize from "./GridItemDndResize"
+import GridSub from "./GridSub"
 
 type Props = {
-    type?: "arem" | "grid-item-dnd" | "grid-item-flip" | "grid-item-dnd-flip" | "grid-item-dnd-resize"
+    type?:  "arem" | "subgrid" |
+            "grid-item-dnd" | "grid-item-flip" |
+            "grid-item-dnd-flip" | "grid-item-dnd-resize"
 }
 
 export default function (props: Props) {
     const { type } = props
 
-    switch(type) {
+    switch (type) {
         case 'arem': return <GridArea />
+        case 'subgrid': return <GridSub />
         case 'grid-item-dnd': return <GridItemDnd />
         case 'grid-item-flip': return <GridFlip />
         case "grid-item-dnd-flip": return <GridItemDndFlip />

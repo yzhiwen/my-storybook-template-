@@ -24,6 +24,11 @@ export const GridArem: Story = {
         type: 'arem'
     }
 };
+export const SubGrid: Story = {
+    args: {
+        type: 'subgrid'
+    }
+};
 export const GridItemFlip: Story = {
     args: {
         type: 'grid-item-flip'
