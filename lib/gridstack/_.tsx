@@ -1,4 +1,5 @@
-import GridItemDndResize from "./GridItemDndResize"
+import GridStack from "./GridStack"
+import { TestGridNodeProps } from "./type"
 
 type Props = {
     type?: ''
@@ -6,5 +7,5 @@ type Props = {
 export default function(props: Props) {
     switch(props.type) {
     }
-    return <GridItemDndResize />
+    return <GridStack gridRootProps={TestGridNodeProps} />
 }

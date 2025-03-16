@@ -1,16 +1,30 @@
-import { DndContext, DragOverlay, useDraggable, type DragEndEvent, type DragMoveEvent, type DragStartEvent } from "@dnd-kit/core";
+import { DndContext, DragOverlay, useDraggable, useDroppable, type DragEndEvent, type DragMoveEvent, type DragStartEvent } from "@dnd-kit/core";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import useResizable from "../dnd/useResizable";
 import classNames from "classnames";
+import type { GridNodeProps } from "./type";
 
 type GridProps = {
+    id: string
+    style?: React.CSSProperties
+    className?: string
+
     row?: number
     col?: number
     gap?: number
     items?: GridItem[]
+
+    onResizeEnd?: (data: any) => void
 }
 
 type GridItem = {
+    id: string
+    type?: 'grid' | 'subgrid'
+    row?: number
+    col?: number
+    gap?: number
+    items?: GridItem[]
+
     rowStart?: number
     colStart?: number
     rowEnd?: number
@@ -18,35 +32,30 @@ type GridItem = {
 }
 
 const TestGridItems: GridItem[] = [
-    {}, { rowStart: 2, colStart: 3, rowEnd: 3, colEnd: 4 }, {}
+    { id: 'grid-item-1' }, 
+    { id: 'grid-item-2', rowStart: 2, colStart: 3, rowEnd: 3, colEnd: 4 }, 
+    { id: 'grid-item-3', },
+    { id: 'grid-item-4', type: 'subgrid', }
 ]
 
-// TODO
-// GridItem拖入接收
-// SubGrid
-// 默认参数确定
-// 鼠标位置考虑
-export default function (props: GridProps) {
-    const { row = 5, col = 10, gap, items = TestGridItems } = props
+type Props = GridProps & {
+    id?: string
+    gridNode: GridNodeProps
+}
+
+export default function (props: Props) {
+    const {
+        id = `grid-${Math.random().toString().substring(2)}`, style, className,
+        row = 5, col = 10, gap, items,
+        gridNode
+    } = props
     const [activeId, setActiveId] = useState<any>(null);
     const [activeArea, setActiveArea] = useState<any>(null);
     const [activeStyle, setActiveStyle] = useState<any>(null)
-    const [gridItems, setGridItems] = useState<GridItem[]>(items ?? [])
+    const [gridItems, setGridItems] = useState<GridItem[]>(items ?? TestGridItems)
 
     return <DndContext onDragStart={handleDragStart} onDragMove={handleDragMove} onDragEnd={handleDragEnd}>
-        <div id='grid-c'
-            className={classNames(
-                `grid w-[500px] h-[300px] bg-amber-200`,
-                `grid-cols-${col} grid-rows-${row}`,
-            )}>
-            {gridItems.map((item, index) => {
-                return <GridItem id={`grid-item-${index}`} key={index} {...item} onResizeEnd={onGridItemResizeEnd}>{index}</GridItem>
-            })}
-
-            <div className="grid grid-cols-subgrid grid-rows-subgrid row-start-4 col-start-5 row-span-2 col-span-3 bg-blue-200">
-                {/* <div className="bg-amber-600 row-start-2 col-start-2 col-span-2"></div> */}
-            </div>
-        </div>
+        <GridContainerNew {...props} id={id} items={gridItems} onResizeEnd={onGridItemResizeEnd} />
         <DragOverlay>
             {activeId ? <GridItemOverlay id="grid-item-overlay" className="bg-blue-200" style={activeStyle} /> : null}
         </DragOverlay>
@@ -68,38 +77,31 @@ export default function (props: GridProps) {
         setActiveId(null);
         setActiveStyle(null);
         setActiveArea(null);
-        setGridItems((items) => {
-            const items_ = items.map((item, index) => {
-                if (event.active.id === `grid-item-${index}`) {
-                    return { ...activeArea }
-                }
-                return item
-            })
-            return items_
-        })
-    }
 
-    function onGridItemResizeEnd({ id }: any) {
-        const c = document.getElementById('grid-c')!
-        const item = document.getElementById(id)!
-        const crect = c.getBoundingClientRect()
-        const rect = item.getBoundingClientRect()
-        const lastest = {
-            width: rect.width, height: rect.height,
-            x: rect.x, y: rect.y,
-            left: rect.left, top: rect.top,
-            right: rect.right, bottom: rect.bottom,
+        if (event.over?.id === 'grid-item-4') {
+            console.log('grid-item-4', gridItems);
+            const items_ = gridItems.filter(item => item.id !== event.active.id)
+            const item = gridItems.find(item => item.id === event.active.id!)
+            const sub = gridItems.find(item => item.type === 'subgrid')!
+            sub.items = [{...item, ...activeArea}]
+            console.log(items_);
+            setGridItems(items_)
+            
+            // setGridItems((items) => {
+            //     const items_ = items.map((item, index) => {
+            //         if (event.active.id === item.id) {
+            //             return { ...item, ...activeArea }
+            //         }
+            //         return item
+            //     })
+            //     return items_
+            // })
+            return
         }
-        const area = calcGridItemArea({
-            row: 5, col: 10,
-            x: crect.x, y: crect.y, width: crect.width, height: crect.height,
-            itemX: lastest.x, itemY: lastest.y, itemWidth: lastest.width, itemHeight: lastest.height
-        })
-
         setGridItems((items) => {
             const items_ = items.map((item, index) => {
-                if (id === `grid-item-${index}`) {
-                    return { ...area }
+                if (event.active.id === item.id) {
+                    return { ...item, ...activeArea }
                 }
                 return item
             })
@@ -108,9 +110,9 @@ export default function (props: GridProps) {
     }
 
     function handleDragMove(event: DragMoveEvent) {
-        // console.log("on move", event)
+        // console.log("on move", id, event)
         const { x: deltaX, y: deltaY } = event.delta
-        const c = document.getElementById('grid-c')!
+        const c = document.getElementById(id)!
         const item = event.activatorEvent.target as HTMLElement
 
         const crect = c.getBoundingClientRect()
@@ -133,6 +135,107 @@ export default function (props: GridProps) {
             gridArea: area["grid-area"]
         })
     }
+
+    function onGridItemResizeEnd({ id: gridItemId }: any) {
+        // console.log(">>> on resize end", )
+        const c = document.getElementById(id)!
+        const item = document.getElementById(gridItemId)!
+        const crect = c.getBoundingClientRect()
+        const rect = item.getBoundingClientRect()
+        const lastest = {
+            width: rect.width, height: rect.height,
+            x: rect.x, y: rect.y,
+            left: rect.left, top: rect.top,
+            right: rect.right, bottom: rect.bottom,
+        }
+        const area = calcGridItemArea({
+            row: 5, col: 10,
+            x: crect.x, y: crect.y, width: crect.width, height: crect.height,
+            itemX: lastest.x, itemY: lastest.y, itemWidth: lastest.width, itemHeight: lastest.height
+        })
+
+        setGridItems((items) => {
+            const items_ = items.map((item, index) => {
+                if (gridItemId === item.id) {
+                    return { ...item, ...area }
+                }
+                return item
+            })
+            return items_
+        })
+    }
+}
+
+function GridContainer(props: GridNodeProps) {
+    const {
+        id, style, className,
+        row = 5, col = 10, gap, items,
+        onResizeEnd,
+    } = props
+    const [gridItems, setGridItems] = useState<GridNodeProps[]>([])
+    const { setNodeRef } = useDroppable({ id, })
+
+    useEffect(() => {
+        if (props.items) {
+            setGridItems(props.items)
+        }
+    }, [props])
+
+    return <div id={id}
+        ref={setNodeRef}
+        className={classNames(
+            className,
+            `grid w-[500px] h-[300px] bg-amber-200`,
+            `grid-cols-${col} grid-rows-${row}`,
+        )}>
+        {gridItems.map((item, index) => {
+            if (item.type === 'subgrid') {
+                return <GridContainer
+                    id={item.id}
+                    key={item.id}
+                    className="grid-cols-subgrid grid-rows-subgrid row-start-4 col-start-5 row-span-2 col-span-3 bg-blue-700"
+                    items={item.items}
+                />
+            }
+            return <GridItem {...item} key={item.id} onResizeEnd={onResizeEnd}>{item.id}</GridItem>
+        })}
+    </div>
+}
+
+function GridContainerNew(props: GridProps) {
+    const {
+        id, style, className,
+        row = 5, col = 10, gap, items,
+        onResizeEnd,
+    } = props
+    const [gridItems, setGridItems] = useState<GridItem[]>([])
+    const { setNodeRef } = useDroppable({ id, })
+
+    useEffect(() => {
+        if (props.items) {
+            setGridItems(props.items)
+        }
+    }, [props])
+
+    return <div id={id}
+        ref={setNodeRef}
+        className={classNames(
+            className,
+            `grid w-[500px] h-[300px] bg-amber-200`,
+            `grid-cols-${col} grid-rows-${row}`,
+        )}>
+        {gridItems.map((item, index) => {
+            if (item.type === 'subgrid') {
+                return <GridContainerNew
+                    id={item.id}
+                    key={item.id}
+                    className="grid-cols-subgrid grid-rows-subgrid row-start-4 col-start-5 row-span-2 col-span-3 bg-blue-700"
+                    items={item.items}
+                />
+            }
+            return <GridItem {...item} key={item.id} onResizeEnd={onResizeEnd}>{item.id}</GridItem>
+        })}
+    </div>
 }
 
 type GridAreaCalc = {
@@ -212,13 +315,13 @@ type GridItemProps = {
 }
 
 function GridItem(props: GridItemProps) {
-    const { rowStart, colStart, rowEnd, colEnd, onResizeEnd } = props
+    const { id, rowStart, colStart, rowEnd, colEnd, onResizeEnd } = props
 
     const [size, setSize] = useState<{ width: number, height: number } | undefined>()
     const [isResizing, setIsResizing] = useState(false)
 
     const { node, attributes, listeners, setNodeRef, transform } = useDraggable({
-        id: props.id,
+        id,
         disabled: isResizing,
         data: {}, // 在drag过程中无法修改
     });
@@ -234,7 +337,7 @@ function GridItem(props: GridItemProps) {
         onResizeEnd(size) {
             setSize(undefined)
             setIsResizing(false)
-            onResizeEnd?.({ id: props.id })
+            onResizeEnd?.({ id })
         },
     })
 
