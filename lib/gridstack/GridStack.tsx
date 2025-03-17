@@ -3,7 +3,11 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import useResizable from "../dnd/useResizable";
 import classNames from "classnames";
 import type { GridNodeProps, GridStackProps } from "./type";
+import IndexTree from "./IndexTree";
 
+// TODO
+// subgrid支持drag+resize
+// drag考虑鼠标偏移位置
 export default function (props: GridStackProps) {
     const {
         gridRootProps
@@ -37,47 +41,35 @@ export default function (props: GridStackProps) {
         setActiveStyle(null);
         setActiveArea(null);
 
-        // if (event.over?.id === 'grid-item-4') {
-        //     console.log('grid-item-4', gridItems);
-        //     const items_ = gridItems.filter(item => item.id !== event.active.id)
-        //     const item = gridItems.find(item => item.id === event.active.id!)
-        //     const sub = gridItems.find(item => item.type === 'subgrid')!
-        //     sub.items = [{ ...item, ...activeArea }]
-        //     console.log(items_);
-        //     setGridItems(items_)
-        //     return
-        // }
-
-        // setGridItems((items) => {
-        //     const items_ = items.map((item, index) => {
-        //         if (event.active.id === item.id) {
-        //             return { ...item, ...activeArea }
-        //         }
-        //         return item
-        //     })
-        //     return items_
-        // })
-
         // if activeParentId !== overId
         //      remove activeId
         //      insert overId
 
         setRootGridProps(root => {
-            // drag的父节点未变
-            // const items_ = root.items?.map(item => {
-            //     if (item.id === activeId) {
-            //         return { ...item, ...activeArea }
-            //     }
-            //     return { ...item }
-            // })
+            const tree = new IndexTree(root, 'id', 'items')
+            console.log(root, tree);
+            const activeTreeNode = tree.get(activeId)!
+            const parentId = activeTreeNode.parent
+            const overId = event.over!.id
 
-            // drag的父节点改变
-            const items_ = root.items?.filter(item => item.id !== activeId)
-            const item = root.items?.find(item => item.id !== activeId)
-            const parent = root.items?.find(item => item.id === event.over?.id)!
-            parent.items = [...(parent.items ?? []), { ...item, ...activeArea }]
-
-            return { ...root, items: items_ }
+            if (parentId === overId) {
+                // drag的父节点未变
+                const items_ = root.items?.map(item => {
+                    if (item.id === activeId) {
+                        return { ...item, ...activeArea }
+                    }
+                    return { ...item }
+                })
+                return { ...root, items: items_ }
+            } else {
+                // drag的父节点改变
+                const items_ = root.items?.filter(item => item.id !== activeId)
+                const item = root.items?.find(item => item.id !== activeId)
+                const parent = root.items?.find(item => item.id === event.over?.id)!
+                parent.items = [...(parent.items ?? []), { ...item, ...activeArea }]
+                return { ...root, items: items_ }
+            }
+            return root
         })
     }
 
@@ -233,7 +225,8 @@ function GridItem(props: GridNodeProps) {
             ...(props?.style ?? {}),
             ...(size ? { width: `${size.width}px`, height: `${size.height}px` } : {}),
         }}>
-        {props.children}
+        {id === 'grid-item-1' ? <button className="w-[30px] h-[30px]">ccc</button> : props.children}
+        {/* {props.children} */}
         <div
             className="resize-handle"
             {...resizeListeners}
