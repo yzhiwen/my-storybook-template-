@@ -86,48 +86,51 @@ export default function (props: GridStackProps) {
     }
 
     function onGridItemResizeEnd({ id: gridItemId }: any) {
-        console.log(">>> on resize end",)
-        // const c = document.getElementById(id)!
-        // const item = document.getElementById(gridItemId)!
-        // const crect = c.getBoundingClientRect()
-        // const rect = item.getBoundingClientRect()
-        // const lastest = {
-        //     width: rect.width, height: rect.height,
-        //     x: rect.x, y: rect.y,
-        //     left: rect.left, top: rect.top,
-        //     right: rect.right, bottom: rect.bottom,
-        // }
-        // const area = calcGridItemArea({
-        //     row: 5, col: 10,
-        //     x: crect.x, y: crect.y, width: crect.width, height: crect.height,
-        //     itemX: lastest.x, itemY: lastest.y, itemWidth: lastest.width, itemHeight: lastest.height
-        // })
+        console.log(">>> on resize end",);
 
-        // setGridItems((items) => {
-        //     const items_ = items.map((item, index) => {
-        //         if (gridItemId === item.id) {
-        //             return { ...item, ...area }
-        //         }
-        //         return item
-        //     })
-        //     return items_
-        // })
+        // const c = document.getElementById(id)!
+        const item = document.getElementById(gridItemId)!
+        const c = item.parentElement!
+        const crect = c.getBoundingClientRect()
+        const rect = item.getBoundingClientRect()
+        const lastest = {
+            width: rect.width, height: rect.height,
+            x: rect.x, y: rect.y,
+            left: rect.left, top: rect.top,
+            right: rect.right, bottom: rect.bottom,
+        }
+        const activeArea = calcGridItemArea({
+            row: 5, col: 10,
+            x: crect.x, y: crect.y, width: crect.width, height: crect.height,
+            itemX: lastest.x, itemY: lastest.y, itemWidth: lastest.width, itemHeight: lastest.height
+        })
+
+        setRootGridProps(root => {
+            if (true) { // parentId !== overId
+                // drag的父节点未变
+                const items_ = root.items?.map(item => {
+                    if (item.id === gridItemId) {
+                        return { ...item, ...activeArea }
+                    }
+                    return { ...item }
+                })
+                return { ...root, items: items_ }
+            } else { // parentId !== overId
+                // TODO
+            }
+            return root
+        })
     }
 
     function calcDragNewArea(options: any) {
         const { overId, activeId, deltaX, deltaY, overProps } = options
         const { row, col } = overProps
 
-        console.log(">>>calcDragNewArea", overId, activeId)
         const over = document.getElementById(overId)!
         const active = document.getElementById(activeId)!
 
-        console.log(">>>calcDragNewArea2",)
-        // if activeParentId !== overId
-
         const crect = over.getBoundingClientRect()
         const rect = active.getBoundingClientRect()
-        console.log(">>>calcDragNewArea3",)
         // 没考虑鼠标
         const lastest = {
             width: rect.width, height: rect.height,
@@ -135,13 +138,11 @@ export default function (props: GridStackProps) {
             left: rect.left + deltaX, top: rect.top + deltaY,
             right: rect.right + deltaX, bottom: rect.bottom + deltaY,
         }
-        console.log(">>>calcDragNewArea", lastest)
         const area = calcGridItemArea({
             row, col,
             x: crect.x, y: crect.y, width: crect.width, height: crect.height,
             itemX: lastest.x, itemY: lastest.y, itemWidth: lastest.width, itemHeight: lastest.height
         })
-        console.log(">>>", area)
         setActiveArea(area)
         setActiveStyle({
             ...activeStyle,
