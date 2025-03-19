@@ -42,8 +42,8 @@ export default function GridItem(props: GridNodeProps) {
             ...(props?.style ?? {}),
             ...(size ? { width: `${size.width}px`, height: `${size.height}px` } : {}),
         }}>
-        {id === 'grid-item-1' ? <button className="w-[30px] h-[30px]">ccc</button> : props.children}
-        {/* {props.children} */}
+        {/* {id === 'grid-item-1' ? <button className="w-[30px] h-[30px]">ccc</button> : props.children} */}
+        {props.children}
         <div
             className="resize-handle"
             {...resizeListeners}

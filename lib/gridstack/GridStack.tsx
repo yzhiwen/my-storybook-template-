@@ -8,8 +8,15 @@ import GridContainer from "./GridContainer";
 import calcGridItemArea from './calcGridItemArea'
 
 // TODO
-// subgrid支持drag+resize
+// subgrid 嵌套 subgrid
+// item subgrid 通过拖入创建
 // drag考虑鼠标偏移位置
+
+// DO
+// grid-item(s)的drag
+// grid-item(s)的resize
+// grid-item拖入subgrid
+// subgrid支持drag+resize
 export default function (props: GridStackProps) {
     const {
         gridRootProps
@@ -18,6 +25,10 @@ export default function (props: GridStackProps) {
     const [activeArea, setActiveArea] = useState<any>(null);
     const [activeStyle, setActiveStyle] = useState<any>(null)
     const [rootGridProps, setRootGridProps] = useState<GridNodeProps>(gridRootProps)
+
+    useEffect(() => {
+        console.log(rootGridProps, 'rootGridProps');
+    }, [rootGridProps])
 
     return <DndContext onDragStart={handleDragStart} onDragMove={handleDragMove} onDragEnd={handleDragEnd}>
         <GridContainer {...rootGridProps} onResizeEnd={onGridItemResizeEnd} />
@@ -88,8 +99,7 @@ export default function (props: GridStackProps) {
     }
 
     function onGridItemResizeEnd({ id: gridItemId }: any) {
-        console.log(">>> on resize end",);
-
+        console.log(">>> on resize end");
         // const c = document.getElementById(id)!
         const item = document.getElementById(gridItemId)!
         const c = item.parentElement!

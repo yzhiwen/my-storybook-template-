@@ -5,6 +5,7 @@ import classNames from "classnames";
 import type { GridNodeProps, GridStackProps } from "./type";
 import IndexTree from "./IndexTree";
 import GridItem from "./GridItem";
+import GridContainerSub from "./GridContainerSub";
 
 export default function GridContainer(props: GridNodeProps) {
     const {
@@ -30,13 +31,7 @@ export default function GridContainer(props: GridNodeProps) {
         )}>
         {gridItems.map((item, index) => {
             if (item.type === 'subgrid') {
-                return <GridContainer
-                    {...item}
-                    id={item.id}
-                    key={item.id}
-                    className="grid-cols-subgrid grid-rows-subgrid row-start-4 col-start-5 row-span-2 col-span-3 bg-blue-700"
-                    items={item.items}
-                />
+                return <GridContainerSub  {...item}  onResizeEnd={onResizeEnd} />
             }
             return <GridItem {...item} key={item.id} onResizeEnd={onResizeEnd}>{item.id}</GridItem>
         })}

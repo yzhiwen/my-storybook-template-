@@ -9,10 +9,41 @@ export default function GridContainerSub(props: GridNodeProps) {
     const {
         id, style, className,
         row = 5, col = 10, gap, items,
+        rowStart, colStart, rowEnd, colEnd,
         onResizeEnd,
     } = props
     const [gridItems, setGridItems] = useState<GridNodeProps[]>([])
-    const { setNodeRef } = useDroppable({ id, data: { ...props } })
+
+    const [size, setSize] = useState<{ width: number, height: number } | undefined>()
+    const [isResizing, setIsResizing] = useState(false)
+
+    const { node: nodeDrag, isDragging, attributes, listeners: dragListeners, setNodeRef: setNodeRefDrag, transform } = useDraggable({
+        id,
+        disabled: isResizing,
+        data: { ...props }, // 在drag过程中无法修改
+    });
+
+    const { node: nodeDrop, setNodeRef: setNodeRefDrop } = useDroppable({
+        id,
+        disabled: isDragging || isResizing,
+        data: { ...props }
+    })
+
+    const { listeners: resizeListeners } = useResizable({
+        resizeRef: nodeDrag,
+        onResizeStart() {
+            setIsResizing(true)
+        },
+        onResizeMove(size) {
+            // console.log(size, 'move');
+            setSize(size)
+        },
+        onResizeEnd(size) {
+            setSize(undefined)
+            setIsResizing(false)
+            onResizeEnd?.({ id })
+        },
+    })
 
     useEffect(() => {
         if (props.items) {
@@ -21,23 +52,43 @@ export default function GridContainerSub(props: GridNodeProps) {
     }, [props])
 
     return <div id={id}
-        ref={setNodeRef}
+        ref={(ele) => {
+            setNodeRefDrag(ele)
+            setNodeRefDrop(ele)
+        }}
+        {...dragListeners}
+        {...attributes}
         className={classNames(
+            `relative grid bg-blue-700`,
+            // subgrid的时候，width/height无效
+            size ? `` : `grid-cols-subgrid grid-rows-subgrid`,
+            // `row-start-4 col-start-5 row-span-2 col-span-3 bg-blue-700`,
+            // `grid-cols-${col} grid-rows-${row}`,
             className,
-            `grid w-[500px] h-[300px] bg-amber-200`,
-            `grid-cols-${col} grid-rows-${row}`,
-        )}>
+        )}
+        style={{
+            ...(rowStart && colStart && rowEnd && colEnd ? { gridArea: `${rowStart} / ${colStart} / ${rowEnd} / ${colEnd}` } : {}),
+            ...(props?.style ?? {}),
+            ...(size ? { width: `${size.width}px`, height: `${size.height}px` } : {}),
+        }}>
         {gridItems.map((item, index) => {
             if (item.type === 'subgrid') {
-                return <GridContainerSub
-                    {...item}
-                    id={item.id}
-                    key={item.id}
-                    className="grid-cols-subgrid grid-rows-subgrid row-start-4 col-start-5 row-span-2 col-span-3 bg-blue-700"
-                    items={item.items}
-                />
+                return <GridContainerSub {...item} items={item.items} />
             }
             return <GridItem {...item} key={item.id} onResizeEnd={onResizeEnd}>{item.id}</GridItem>
         })}
+        <div
+            className="resize-handle"
+            {...resizeListeners}
+            style={{
+                position: 'absolute',
+                bottom: 0,
+                right: 0,
+                width: '10px',
+                height: '10px',
+                backgroundColor: 'grey',
+                cursor: 'nwse-resize',
+            }}
+        ></div>
     </div>
 }

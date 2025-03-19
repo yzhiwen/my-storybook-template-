@@ -16,7 +16,8 @@ export const TestGridNodeProps: GridNodeProps = {
         { id: 'grid-item-1' },
         { id: 'grid-item-2', rowStart: 2, colStart: 3, rowEnd: 3, colEnd: 4 },
         { id: 'grid-item-3', },
-        { id: 'grid-item-4', type: 'subgrid', row: 2, col: 3, }
+        //  `row-start-4 col-start-5 row-span-2 col-span-3 bg-blue-700`,
+        { id: 'grid-item-4', type: 'subgrid', row: 2, col: 3, rowStart: 4, colStart: 5, rowEnd: 6, colEnd: 8  }
     ]
 }
 
