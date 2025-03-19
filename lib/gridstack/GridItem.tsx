@@ -1,0 +1,61 @@
+import { DndContext, DragOverlay, useDraggable, useDroppable, type DragEndEvent, type DragMoveEvent, type DragStartEvent } from "@dnd-kit/core";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import useResizable from "../dnd/useResizable";
+import classNames from "classnames";
+import type { GridNodeProps } from "./type";
+
+export default function GridItem(props: GridNodeProps) {
+    const { id, rowStart, colStart, rowEnd, colEnd, onResizeEnd } = props
+
+    const [size, setSize] = useState<{ width: number, height: number } | undefined>()
+    const [isResizing, setIsResizing] = useState(false)
+
+    const { node, attributes, listeners, setNodeRef, transform } = useDraggable({
+        id,
+        disabled: isResizing,
+        data: { ...props }, // 在drag过程中无法修改
+    });
+
+    const { listeners: resizeListeners } = useResizable({
+        resizeRef: node,
+        onResizeStart() {
+            setIsResizing(true)
+        },
+        onResizeMove(size) {
+            setSize(size)
+        },
+        onResizeEnd(size) {
+            setSize(undefined)
+            setIsResizing(false)
+            onResizeEnd?.({ id })
+        },
+    })
+
+    return <div
+        ref={setNodeRef}
+        {...listeners}
+        {...attributes}
+        className="relative grid-item bg-blue-200"
+        {...props}
+        style={{
+            ...(rowStart && colStart && rowEnd && colEnd ? { gridArea: `${rowStart} / ${colStart} / ${rowEnd} / ${colEnd}` } : {}),
+            ...(props?.style ?? {}),
+            ...(size ? { width: `${size.width}px`, height: `${size.height}px` } : {}),
+        }}>
+        {id === 'grid-item-1' ? <button className="w-[30px] h-[30px]">ccc</button> : props.children}
+        {/* {props.children} */}
+        <div
+            className="resize-handle"
+            {...resizeListeners}
+            style={{
+                position: 'absolute',
+                bottom: 0,
+                right: 0,
+                width: '10px',
+                height: '10px',
+                backgroundColor: 'grey',
+                cursor: 'nwse-resize',
+            }}
+        ></div>
+    </div>
+}
