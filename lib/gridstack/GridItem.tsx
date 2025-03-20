@@ -43,6 +43,7 @@ export default function GridItem(props: GridNodeProps) {
             ...(size ? { width: `${size.width}px`, height: `${size.height}px` } : {}),
         }}>
         {/* {id === 'grid-item-1' ? <button className="w-[30px] h-[30px]">ccc</button> : props.children} */}
+        {/* <input className="w-full h-full" /> */}
         {props.children}
         <div
             className="resize-handle"

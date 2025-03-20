@@ -10,6 +10,8 @@ import calcGridItemArea from './calcGridItemArea'
 // TODO
 // subgrid 嵌套 subgrid
 // item subgrid 通过拖入创建
+// item 如何渲染button、input等组件
+// resize考虑偏移位置
 
 // DO
 // grid-item(s)的drag
@@ -19,6 +21,7 @@ import calcGridItemArea from './calcGridItemArea'
 // drag考虑偏移位置
 export default function (props: GridStackProps) {
     const {
+        disableDndContext,
         gridRootProps
     } = props
     const [activeId, setActiveId] = useState<any>(null);
@@ -29,13 +32,14 @@ export default function (props: GridStackProps) {
     useEffect(() => {
         console.log(rootGridProps, 'rootGridProps');
     }, [rootGridProps])
+    const Context = disableDndContext ? EmptyContext : DndContext
 
-    return <DndContext onDragStart={handleDragStart} onDragMove={handleDragMove} onDragEnd={handleDragEnd}>
+    return <Context onDragStart={handleDragStart} onDragMove={handleDragMove} onDragEnd={handleDragEnd}>
         <GridContainer {...rootGridProps} onResizeEnd={onGridItemResizeEnd} />
         <DragOverlay>
             {activeId ? <GridItemOverlay id="grid-item-overlay" className="bg-blue-200" style={activeStyle} /> : null}
         </DragOverlay>
-    </DndContext>
+    </Context>
 
     function handleDragStart(event: DragStartEvent) {
         // console.log("on start", event)
@@ -166,3 +170,7 @@ export default function (props: GridStackProps) {
 function GridItemOverlay(props: any) {
     return <div {...props}></div>
 }
+
+function EmptyContext(props: any) {
+    return <>{props?.children}</>
+} 
