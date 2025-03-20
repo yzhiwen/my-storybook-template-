@@ -1,5 +1,3 @@
-
-
 type GridAreaCalc = {
     row: number
     col: number
@@ -15,21 +13,30 @@ type GridAreaCalc = {
     itemWidth: number
     itemHeight: number
 }
-type GridAreaCalcResult = { rowStart: number, rowEnd: number, colStart: number, colEnd: number, 'grid-area': string, }
+
+type GridAreaCalcResult = { 
+    rowStart: number, 
+    rowEnd: number, 
+    colStart: number, 
+    colEnd: number, 
+    'grid-area': string, 
+}
+
 export default function calcGridItemArea(options: GridAreaCalc): GridAreaCalcResult {
-    console.log(">>>calcGridItemArea", JSON.stringify(options))
+    // console.log(">>>calcGridItemArea", JSON.stringify(options))
     const rowSize = options.height / options.row
     const colSize = options.width / options.col
+    const offsetX = options.itemX - options.x
+    const offsetY = options.itemY - options.y
 
-    console.log(">>>calcGridItemArea2",)
     // 假设完全在容器内
     let rowStart = 1;
     for (; rowStart <= options.row; rowStart += 1) {
-        if (options.itemY - options.y < rowStart * rowSize) break
+        if (offsetY < rowStart * rowSize - rowSize / 2) break
     }
     let colStart = 1;
     for (; colStart <= options.col; colStart += 1) {
-        if (options.itemX - options.x < colStart * colSize) break
+        if (offsetX < colStart * colSize - colSize / 2) break
     }
 
     let rowSpan = 1;

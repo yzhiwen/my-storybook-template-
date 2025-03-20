@@ -10,13 +10,13 @@ import calcGridItemArea from './calcGridItemArea'
 // TODO
 // subgrid 嵌套 subgrid
 // item subgrid 通过拖入创建
-// drag考虑鼠标偏移位置
 
 // DO
 // grid-item(s)的drag
 // grid-item(s)的resize
 // grid-item拖入subgrid
 // subgrid支持drag+resize
+// drag考虑偏移位置
 export default function (props: GridStackProps) {
     const {
         gridRootProps
