@@ -15,6 +15,10 @@ type GridAreaCalc = {
 }
 
 type GridAreaCalcResult = { 
+    x: number // new item x 
+    y: number // new item y
+    width: number // new item width
+    height: number // new item height
     rowStart: number, 
     rowEnd: number, 
     colStart: number, 
@@ -62,7 +66,14 @@ export default function calcGridItemArea(options: GridAreaCalc): GridAreaCalcRes
     // for (; colEnd <= options.col; colEnd += 1) {
     //     if (options.itemX - options.x + options.itemWidth < colEnd * colSize) break
     // }
+
+    const itemXNew = options.x + (colStart - 1) * colSize;
+    const itemYNew = options.y + (rowStart - 1) * rowSize;
+    const itemWidth = colSpan * colSize
+    const itemHeight = rowSpan * rowSize
+
     return {
+        x: itemXNew, y: itemYNew, width: itemWidth, height: itemHeight,
         rowStart, rowEnd, colStart, colEnd,
         'grid-area': `${rowStart} / ${colStart} / ${rowEnd} / ${colEnd}`
     }

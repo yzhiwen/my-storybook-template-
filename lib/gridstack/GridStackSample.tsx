@@ -4,6 +4,7 @@ import { TestGridNodeProps, type GridNodeProps } from "./type";
 import { useState } from "react";
 import calcGridItemArea from "./calcGridItemArea";
 import IndexTree from "./IndexTree";
+import GridItemOverlay from "./GridItemOverlay";
 
 export default function GridStackSample() {
 
@@ -23,8 +24,11 @@ export default function GridStackSample() {
             <ExternalComponents />
             <GridStack disableDndContext={draging} gridRootProps={rootGridProps} />
         </div>
-        <DragOverlay>
+        {/* <DragOverlay>
             {activeStyle ? <div id="grid-item-external-overlay" className="bg-blue-200" style={activeStyle} /> : null}
+        </DragOverlay> */}
+         <DragOverlay>
+            {activeId ? <GridItemOverlay id="grid-item-overlay" className="bg-blue-200" style={activeStyle} /> : null}
         </DragOverlay>
     </DndContext>
 
@@ -119,7 +123,9 @@ export default function GridStackSample() {
         setActiveArea(area)
         setActiveStyle({
             ...activeStyle,
-            gridArea: area["grid-area"]
+            gridArea: area["grid-area"],
+            x: area.x, y: area.y,
+            width: area.width, height: area.height,
         })
     }
 }

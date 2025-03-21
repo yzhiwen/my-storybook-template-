@@ -10,7 +10,7 @@ export default function GridItem(props: GridNodeProps) {
     const [size, setSize] = useState<{ width: number, height: number } | undefined>()
     const [isResizing, setIsResizing] = useState(false)
 
-    const { node, attributes, listeners, setNodeRef, transform } = useDraggable({
+    const { node, isDragging, attributes, listeners, setNodeRef, transform } = useDraggable({
         id,
         disabled: isResizing,
         data: { ...props }, // 在drag过程中无法修改
@@ -35,7 +35,10 @@ export default function GridItem(props: GridNodeProps) {
         ref={setNodeRef}
         {...listeners}
         {...attributes}
-        className="relative grid-item bg-blue-200"
+        className={classNames(
+            "relative grid-item bg-blue-200",
+            // isDragging ? '' : '!opacity-100'
+        )}
         {...props}
         style={{
             ...(rowStart && colStart && rowEnd && colEnd ? { gridArea: `${rowStart} / ${colStart} / ${rowEnd} / ${colEnd}` } : {}),

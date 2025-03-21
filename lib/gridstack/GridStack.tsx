@@ -6,6 +6,7 @@ import type { GridNodeProps, GridStackProps } from "./type";
 import IndexTree from "./IndexTree";
 import GridContainer from "./GridContainer";
 import calcGridItemArea from './calcGridItemArea'
+import GridItemOverlay from "./GridItemOverlay";
 
 // TODO
 // subgrid 嵌套 subgrid
@@ -19,6 +20,7 @@ import calcGridItemArea from './calcGridItemArea'
 // grid-item拖入subgrid
 // subgrid支持drag+resize
 // drag考虑偏移位置
+// drag的时候显示拖拽位置跟预测位置
 export default function (props: GridStackProps) {
     const {
         disableDndContext,
@@ -91,8 +93,8 @@ export default function (props: GridStackProps) {
     }
 
     function handleDragMove(event: DragMoveEvent) {
-        console.log("on move", event)
         const { x: deltaX, y: deltaY } = event.delta
+        if (!event.over?.id) return
         calcDragNewArea({
             overId: event.over!.id,
             overProps: event.over!.data.current,
@@ -162,13 +164,11 @@ export default function (props: GridStackProps) {
         setActiveArea(area)
         setActiveStyle({
             ...activeStyle,
-            gridArea: area["grid-area"]
+            gridArea: area["grid-area"],
+            x: area.x,
+            y: area.y,
         })
     }
-}
-
-function GridItemOverlay(props: any) {
-    return <div {...props}></div>
 }
 
 function EmptyContext(props: any) {
