@@ -31,6 +31,22 @@ export default function GridItem(props: GridNodeProps) {
         },
     })
 
+    useEffect(() => {
+        const capture = (e: Event) => {
+            console.log('pointerdown capture');
+            const ele = e.target as HTMLElement
+            ele.style.border = '2px dashed green'
+            setTimeout(() => {
+                ele.style.border = ''
+            }, 5000)
+        }
+        console.log(node.current, 'add capture listener');
+        node.current!.addEventListener('pointerdown', capture, { capture: true })
+        return () => {
+            node.current!.removeEventListener('pointerdown', capture,)
+        }
+    }, [])
+
     return <div
         ref={setNodeRef}
         {...listeners}

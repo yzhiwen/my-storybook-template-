@@ -16,6 +16,10 @@ import onHandleDragEnd from "./onHandleDragEnd";
 // resize考虑现实预测位置
 // resize subgrid
 
+// 假如现在有一个文字、按钮组件（非容器），怎么跟gridstack的拖拽融合，数据结构怎么表示
+// 假如现在有一个轮播图组件（容器），怎么跟gridstack的拖拽融合，数据结构怎么表示
+// 参考_.mix思考的思路
+
 // DO
 // grid-item(s)的drag
 // grid-item(s)的resize

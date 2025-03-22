@@ -1,0 +1,97 @@
+# 混合编排的思路
+
+
+type NodeSchema = {
+  componentName: string;
+  props?: NodeSchemaProps;
+  wrapProps?: NodeSchemaProps
+  children?: NodeSchema[];
+}
+
+componentName类型有：
+- page,item(text,button,input,Image,video),container(banner)
+
+列如：
+{
+  componentName: page,
+  props: {},
+  children: [
+    {
+      componentName: text
+      props: {}
+    },
+    {
+      componentName: button
+      props: {}
+    },
+  ]
+}
+
+对应组件：
+function Page() {
+  return <GridContainer>
+  </GridContainer>
+}
+
+function Text() {
+  return <GridItem>
+    <span></span>
+  </GridItem>
+}
+
+// 难点：
+// 问题点：
+// 在当前的gridstack布局系统，有一个组件想要能够拖入进来，要么就是grid-item或者grid-sub，目前看两种类型都可以
+// 如果这个组件是一个容器组件，比如banner组件，有自己的布局方式，类似grid(gridstack)也有自己的布局方式，但是两者布局方式不同，无法用grid布局实现banner布局
+// 进一步看，如果使用grid-sub包装banner，让banner组件能够拖入gridstack布局系统，grid-sub的子级是banner，grid-sub又可以拖入grid-item，支持拖入grid-item的几乎没有什么意义，还不如直接grid-item包装banner更加纯粹一点。让所有grid-item去包装组件，grid-sub只包装grid-item。（作为规则一）
+// 如果反驳说，用grid-sub可以监听有哪些grid-item插入，那么为什么还要banner，就是因为banner，跟grid-sub的布局方式不一样
+// 这样也就是说banner的子组件是如何插入到banner，又banner去实现，grid布局不关心了，（在上面自己写useDropable，在DndContext监听到over是banner，给到banner做插入）（当然，有可能某些原因，useDropable不会被触发，比如banner的子布局填满了banner，这样子布局也有类似useDropable的逻辑，大概率会先走子布局的useDropable）
+
+// banner的子布局也要有布局能力，那么能使用gridstack布局能力吗？DndContext嵌套，子gridstack会无法跟外部gridstack之间互相拖入拖出，取消子gridstack的DndContext应该就可以。（gridstack系统如果有嵌套grid-nest也是用不了的，因为grid的子级是bannder，再grid-nest，根本不会存在嵌套grid-nest）
+
+// 在这样的布局系统，gridstack布局系统个，有个grid-item，里面是banner组件，banner里面有gridstack，又有很多grid-item。像这些grid-item（banner）、grid-item（banner下的图片）如果被可以被识别，点击可以被选中，选中才可以去配置（用户层面就只有banner跟banner下的图片，这两个需要配置属性）
+// 可以使用捕获，在grid-item或者grid-sub使用捕获pointdown，drag事件是发生在grid-item（如果grid-item有事件，也可以在gird-item子组件阻止冒泡）（作为规则二）
+
+function Banner() {
+  return <GridContainerSub>
+    <GridItem>view1</GridItem>
+    <GridItem>view2</GridItem>
+    <BannerView>
+      <div />
+      <div />
+      <div />
+    </BannerView>
+  </GridContainerSub>
+
+  return <GridItem>
+    <BannerView>
+      <div />
+      <div />
+      <div />
+    </BannerView>
+  </GridItem>
+}
+
+最小mvp：先实现进行拼装验证，再用结构化的json构造生成
+function Page() {
+  return <GridContainer>
+    <Text />
+    <Banner />
+  </GridContainer>
+}
+
+function Text() {
+  return <GridItem>
+    <span></span>
+  </GridItem>
+}
+
+function Banner() {
+  return <GridItem>
+    <BannerView>
+      <div />
+      <div />
+      <div />
+    </BannerView>
+  </GridItem>
+}
