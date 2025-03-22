@@ -30,6 +30,11 @@ export default function calcGridItemMoveArea(options: Calc): CalcResult | undefi
             left: rect.left + deltaX, top: rect.top + deltaY,
             right: rect.right + deltaX, bottom: rect.bottom + deltaY,
         }
+        console.log(options, {
+            row, col,
+            x: crect.x, y: crect.y, width: crect.width, height: crect.height,
+            itemX: lastest.x, itemY: lastest.y, itemWidth: lastest.width, itemHeight: lastest.height
+        }, 'on move calc area');
         const area = calcGridItemArea({
             row, col,
             x: crect.x, y: crect.y, width: crect.width, height: crect.height,

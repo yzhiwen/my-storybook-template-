@@ -7,22 +7,23 @@ type Params = {
     overProps?: any
 
     activeId: string
+    activeProps?: any
     activeArea: GridAreaCalcResult
 
     root: GridNodeProps
 }
 
 export default function onHandleDragEnd(params: Params) {
-    const { activeId, overId, root, activeArea, } = params
+    const { activeId, overId, root, activeArea, overProps, activeProps, } = params
     const tree = new IndexTree(root, 'id', 'items')
     console.log(params, tree);
-    
+
     const activeTreeNode = tree.get(activeId)
     if (!activeTreeNode) {
         const overTreeNode = overId ? tree.get(overId) : undefined
         if (overTreeNode) {
             if (!overTreeNode.node.items) overTreeNode.node.items = []
-            overTreeNode.node.items.push({ ...activeArea, id: Math.random().toString().substring(2) })
+            overTreeNode.node.items.push({ id: Math.random().toString().substring(2), ...activeProps, ...activeArea, })
         }
         return { ...root }
     }
@@ -30,19 +31,25 @@ export default function onHandleDragEnd(params: Params) {
     const parentId = activeTreeNode.parent
     if (parentId === overId) {
         // drag的父节点未变
-        const items_ = root.items?.map(item => {
-            if (item.id === activeId) {
-                return { ...item, ...activeArea }
-            }
-            return { ...item }
-        })
-        return { ...root, items: items_ }
+        Object.assign(activeTreeNode.node, activeProps, activeArea)
+        return { ...root }
     } else {
         // drag的父节点改变
-        const items_ = root.items?.filter(item => item.id !== activeId)
-        const item = root.items?.find(item => item.id !== activeId)
-        const parent = root.items?.find(item => item.id === overId)!
-        parent.items = [...(parent.items ?? []), { ...item, ...activeArea }] as any
-        return { ...root, items: items_ }
+        Object.assign(activeTreeNode.node, activeProps, activeArea)
+
+        // 删除旧节点方式
+        const parentTreeNodeOld = parentId ? tree.get(parentId) : undefined
+        if (parentTreeNodeOld) {
+            const items_ = parentTreeNodeOld.node.items?.filter((item: any) => item.id !== activeId)
+            parentTreeNodeOld.node.items = items_
+        }
+
+        // 添加新节点
+        const parentTreeNodeNew = overId ? tree.get(overId) : undefined
+        if (parentTreeNodeNew) {
+            const item = activeTreeNode.node
+            parentTreeNodeNew.node.items = [...(parentTreeNodeNew.node.items ?? []), item]
+        }
+        return { ...root }
     }
 }

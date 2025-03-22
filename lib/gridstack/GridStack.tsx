@@ -12,9 +12,9 @@ import onHandleDragEnd from "./onHandleDragEnd";
 
 // TODO
 // subgrid 嵌套 subgrid
-// item subgrid 通过拖入创建
 // item 如何渲染button、input等组件
 // resize考虑偏移位置
+// resize考虑现实预测位置
 
 // DO
 // grid-item(s)的drag
@@ -23,22 +23,22 @@ import onHandleDragEnd from "./onHandleDragEnd";
 // subgrid支持drag+resize
 // drag考虑偏移位置
 // drag的时候显示拖拽位置跟预测位置
+// item subgrid 通过拖入创建
+// subgrid的拖入拖出grid-item
 export default function (props: GridStackProps) {
     const {
         disableDndContext,
-        gridRootProps
+        gridRoot,
+        onGridRootChange,
     } = props
     const [activeArea, setActiveArea] = useState<any>(null);
-    const [activeStyle, setActiveStyle] = useState<any>(null)
-    const [rootGridProps, setRootGridProps] = useState<GridNodeProps>(gridRootProps)
-
-    useEffect(() => {
-        console.log(rootGridProps, 'rootGridProps');
-    }, [rootGridProps])
+    const [activeStyle, setActiveStyle] = useState<any>(null);
+    console.log(gridRoot, 'gridRoot');
+   
     const Context = disableDndContext ? EmptyContext : DndContext
 
     return <Context onDragStart={handleDragStart} onDragMove={handleDragMove} onDragEnd={handleDragEnd}>
-        <GridContainer {...rootGridProps} onResizeEnd={onGridItemResizeEnd} />
+        <GridContainer {...gridRoot} onResizeEnd={onGridItemResizeEnd} />
         <DragOverlay>
             {activeStyle ? <GridItemOverlay id="grid-item-overlay" className="bg-blue-200" style={activeStyle} /> : null}
         </DragOverlay>
@@ -51,17 +51,17 @@ export default function (props: GridStackProps) {
         // console.log("on end", event)
         setActiveStyle(null);
         setActiveArea(null);
-
         const root_ = onHandleDragEnd({
             overId: event.over?.id.toString(),
-            overProps: event.over?.data,
+            overProps: event.over?.data.current,
 
             activeId: event.active.id.toString(),
             activeArea: activeArea,
 
-            root: rootGridProps
+            root: gridRoot
         })
-        setRootGridProps(root_)
+        console.log("on end", gridRoot, root_, activeArea)
+        onGridRootChange?.(root_)
     }
 
     function handleDragMove(event: DragMoveEvent) {
@@ -74,6 +74,7 @@ export default function (props: GridStackProps) {
             deltaY,
         }
         const gridItemMoveAreaRes = calcGridItemMoveArea(params)
+        console.log(gridItemMoveAreaRes, 'on move calc area res');
         if (gridItemMoveAreaRes) {
             setActiveArea(gridItemMoveAreaRes.gridItemArea)
             setActiveStyle(gridItemMoveAreaRes.overlayStyle)
@@ -99,21 +100,35 @@ export default function (props: GridStackProps) {
             itemX: lastest.x, itemY: lastest.y, itemWidth: lastest.width, itemHeight: lastest.height
         })
 
-        setRootGridProps(root => {
-            if (true) { // parentId !== overId
-                // drag的父节点未变
-                const items_ = root.items?.map(item => {
-                    if (item.id === gridItemId) {
-                        return { ...item, ...activeArea }
-                    }
-                    return { ...item }
-                })
-                return { ...root, items: items_ }
-            } else { // parentId !== overId
-                // TODO
-            }
-            return root
-        })
+        if (true) { // parentId !== overId
+            // drag的父节点未变
+            const items_ = gridRoot.items?.map(item => {
+                if (item.id === gridItemId) {
+                    return { ...item, ...activeArea }
+                }
+                return { ...item }
+            })
+            const root_ = { ...gridRoot, items: items_ }
+            onGridRootChange?.(root_)
+        } else { // parentId !== overId
+            // TODO
+        }
+
+        // setRootGridProps(root => {
+        //     if (true) { // parentId !== overId
+        //         // drag的父节点未变
+        //         const items_ = root.items?.map(item => {
+        //             if (item.id === gridItemId) {
+        //                 return { ...item, ...activeArea }
+        //             }
+        //             return { ...item }
+        //         })
+        //         return { ...root, items: items_ }
+        //     } else { // parentId !== overId
+        //         // TODO
+        //     }
+        //     return root
+        // })
     }
 }
 

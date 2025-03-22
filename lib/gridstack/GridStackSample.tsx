@@ -23,7 +23,7 @@ export default function GridStackSample() {
     >
         <div className="grid gap-2">
             <ExternalComponents />
-            <GridStack disableDndContext={draging} gridRootProps={rootGridProps} />
+            <GridStack disableDndContext={draging} gridRoot={rootGridProps} onGridRootChange={(_) => setRootGridProps(_)} />
         </div>
         <DragOverlay>
             {activeStyle ? <GridItemOverlay id="grid-item-overlay" className="bg-blue-200" style={activeStyle} /> : null}
@@ -62,9 +62,10 @@ export default function GridStackSample() {
         setActiveArea(null);
         const root_ = onHandleDragEnd({
             overId: event.over?.id.toString(),
-            overProps: event.over?.data,
+            overProps: event.over?.data.current,
 
             activeId: event.active.id.toString(),
+            activeProps: event.active.data.current,
             activeArea: activeArea,
 
             root: rootGridProps
@@ -74,8 +75,10 @@ export default function GridStackSample() {
 }
 
 function ExternalComponents() {
-    return <div className="flex flex-row">
+    return <div className="flex flex-row gap-2">
         <ExternalA />
+        <ExternalB />
+        <ExternalB row={2} col={1} />
     </div>
 }
 
@@ -90,5 +93,29 @@ function ExternalA() {
         {...attributes}
         className="bg-amber-300 z-50">
         ExternalA
+    </div>
+}
+
+
+function ExternalB(props: any) {
+    const { row = 1, col = 1 } = props
+    const id = 'ExternalB ' + row + 'x' + col
+    const { node, setNodeRef, listeners, attributes, } = useDraggable({
+        id,
+        data: {
+            // 必须
+            type: 'subgrid',
+            row: row ?? 1,
+            col: col ?? 1,
+            itmes: [],
+        }
+    })
+    return <div
+        id={id}
+        ref={setNodeRef}
+        {...listeners}
+        {...attributes}
+        className="bg-amber-300 z-50">
+        SubGrid {row}x{col}
     </div>
 }

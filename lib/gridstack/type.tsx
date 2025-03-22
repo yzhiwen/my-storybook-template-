@@ -6,7 +6,8 @@
 
 export type GridStackProps = {
     disableDndContext?: boolean
-    gridRootProps: GridNodeProps
+    gridRoot: GridNodeProps
+    onGridRootChange?: (_: GridNodeProps) => void
 }
 
 export const TestGridNodeProps: GridNodeProps = {
