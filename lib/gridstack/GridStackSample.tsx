@@ -32,6 +32,12 @@ export default function GridStackSample() {
 
     function handleDragStart(event: DragStartEvent) {
         setDraging(true)
+        const target = event.activatorEvent.target as HTMLElement
+        setActiveStyle({
+            ...activeStyle,
+            width: target.getBoundingClientRect().width,
+            height: target.getBoundingClientRect().height,
+        })
     }
 
     function handleDragMove(event: DragMoveEvent) {
