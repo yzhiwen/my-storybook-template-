@@ -5,7 +5,7 @@ import classNames from "classnames";
 import type { GridNodeProps } from "./type";
 
 export default function GridItem(props: GridNodeProps) {
-    const { id, rowStart, colStart, rowEnd, colEnd, onResizeEnd } = props
+    const { id, rowStart, colStart, rowEnd, colEnd, onResizeEnd, onGridItemRender } = props
 
     const [size, setSize] = useState<{ width: number, height: number } | undefined>()
     const [isResizing, setIsResizing] = useState(false)
@@ -47,7 +47,7 @@ export default function GridItem(props: GridNodeProps) {
         }}>
         {/* {id === 'grid-item-1' ? <button className="w-[30px] h-[30px]">ccc</button> : props.children} */}
         {/* <input className="w-full h-full" /> */}
-        {props.children}
+        {onGridItemRender ? onGridItemRender?.(props) : props.children}
         <div
             className="resize-handle"
             {...resizeListeners}

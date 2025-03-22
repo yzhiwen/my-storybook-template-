@@ -23,7 +23,14 @@ export default function GridStackSample() {
     >
         <div className="grid gap-2">
             <ExternalComponents />
-            <GridStack disableDndContext={draging} gridRoot={rootGridProps} onGridRootChange={(_) => setRootGridProps(_)} />
+            <GridStack
+                disableDndContext={draging}
+                gridRoot={rootGridProps}
+                onGridRootChange={(_) => setRootGridProps(_)}
+                // onGridItemRender={(props) => {
+                //     return <input className="w-full h-full" onPointerDown={(e) => e.stopPropagation()} />
+                // }} 
+                />
         </div>
         <DragOverlay>
             {activeStyle ? <GridItemOverlay id="grid-item-overlay" className="bg-blue-200" style={activeStyle} /> : null}

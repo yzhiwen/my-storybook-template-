@@ -8,6 +8,7 @@ export type GridStackProps = {
     disableDndContext?: boolean
     gridRoot: GridNodeProps
     onGridRootChange?: (_: GridNodeProps) => void
+    onGridItemRender?: (props: GridNodeProps) => React.ReactElement
 }
 
 export const TestGridNodeProps: GridNodeProps = {
@@ -48,4 +49,5 @@ export type GridNodeProps = {
     onResizeEnd?: (data: any) => void
 
     children?: any
+    onGridItemRender?: (props: any) => React.ReactElement
 }
