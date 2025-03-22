@@ -7,6 +7,7 @@ import IndexTree from "./IndexTree";
 import GridContainer from "./GridContainer";
 import calcGridItemArea from './calcGridItemArea'
 import GridItemOverlay from "./GridItemOverlay";
+import calcGridItemMoveArea from "./calcGridItemMoveArea";
 
 // TODO
 // subgrid 嵌套 subgrid
@@ -26,7 +27,6 @@ export default function (props: GridStackProps) {
         disableDndContext,
         gridRootProps
     } = props
-    const [activeId, setActiveId] = useState<any>(null);
     const [activeArea, setActiveArea] = useState<any>(null);
     const [activeStyle, setActiveStyle] = useState<any>(null)
     const [rootGridProps, setRootGridProps] = useState<GridNodeProps>(gridRootProps)
@@ -39,24 +39,15 @@ export default function (props: GridStackProps) {
     return <Context onDragStart={handleDragStart} onDragMove={handleDragMove} onDragEnd={handleDragEnd}>
         <GridContainer {...rootGridProps} onResizeEnd={onGridItemResizeEnd} />
         <DragOverlay>
-            {activeId ? <GridItemOverlay id="grid-item-overlay" className="bg-blue-200" style={activeStyle} /> : null}
+            {activeStyle ? <GridItemOverlay id="grid-item-overlay" className="bg-blue-200" style={activeStyle} /> : null}
         </DragOverlay>
     </Context>
 
     function handleDragStart(event: DragStartEvent) {
-        // console.log("on start", event)
-        const target = event.activatorEvent.target as HTMLElement
-        setActiveId(event.active.id);
-        setActiveStyle({
-            ...activeStyle,
-            width: target.getBoundingClientRect().width,
-            height: target.getBoundingClientRect().height,
-        })
     }
 
     function handleDragEnd(event: DragEndEvent) {
         // console.log("on end", event)
-        setActiveId(null);
         setActiveStyle(null);
         setActiveArea(null);
 
@@ -65,11 +56,12 @@ export default function (props: GridStackProps) {
         //      insert overId
 
         setRootGridProps(root => {
+            const activeId = event.active.id as string
+            const overId = event.over!.id
             const tree = new IndexTree(root, 'id', 'items')
             console.log(root, tree);
             const activeTreeNode = tree.get(activeId)!
             const parentId = activeTreeNode.parent
-            const overId = event.over!.id
 
             if (parentId === overId) {
                 // drag的父节点未变
@@ -94,14 +86,18 @@ export default function (props: GridStackProps) {
 
     function handleDragMove(event: DragMoveEvent) {
         const { x: deltaX, y: deltaY } = event.delta
-        if (!event.over?.id) return
-        calcDragNewArea({
-            overId: event.over!.id,
-            overProps: event.over!.data.current,
-            activeId: event.active.id,
+        const params = {
+            overId: event.over?.id?.toString(),
+            overProps: event.over?.data.current,
+            activeId: event.active.id.toString(),
             deltaX,
             deltaY,
-        })
+        }
+        const gridItemMoveAreaRes = calcGridItemMoveArea(params)
+        if (gridItemMoveAreaRes) {
+            setActiveArea(gridItemMoveAreaRes.gridItemArea)
+            setActiveStyle(gridItemMoveAreaRes.overlayStyle)
+        }
     }
 
     function onGridItemResizeEnd({ id: gridItemId }: any) {
@@ -137,36 +133,6 @@ export default function (props: GridStackProps) {
                 // TODO
             }
             return root
-        })
-    }
-
-    function calcDragNewArea(options: any) {
-        const { overId, activeId, deltaX, deltaY, overProps } = options
-        const { row, col } = overProps
-
-        const over = document.getElementById(overId)!
-        const active = document.getElementById(activeId)!
-
-        const crect = over.getBoundingClientRect()
-        const rect = active.getBoundingClientRect()
-        // 没考虑鼠标
-        const lastest = {
-            width: rect.width, height: rect.height,
-            x: rect.x + deltaX, y: rect.y + deltaY,
-            left: rect.left + deltaX, top: rect.top + deltaY,
-            right: rect.right + deltaX, bottom: rect.bottom + deltaY,
-        }
-        const area = calcGridItemArea({
-            row, col,
-            x: crect.x, y: crect.y, width: crect.width, height: crect.height,
-            itemX: lastest.x, itemY: lastest.y, itemWidth: lastest.width, itemHeight: lastest.height
-        })
-        setActiveArea(area)
-        setActiveStyle({
-            ...activeStyle,
-            gridArea: area["grid-area"],
-            x: area.x,
-            y: area.y,
         })
     }
 }

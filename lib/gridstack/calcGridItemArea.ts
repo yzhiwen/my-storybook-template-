@@ -14,7 +14,7 @@ type GridAreaCalc = {
     itemHeight: number
 }
 
-type GridAreaCalcResult = { 
+export type GridAreaCalcResult = { 
     x: number // new item x 
     y: number // new item y
     width: number // new item width
