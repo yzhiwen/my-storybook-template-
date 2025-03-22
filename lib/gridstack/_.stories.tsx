@@ -14,7 +14,13 @@ export default meta;
 
 type Story = StoryObj<typeof View>;
 
-export const ViewSample: Story = {
+export const GridSample: Story = {
     args: {
+    }
+};
+
+export const MixGridSample: Story = {
+    args: {
+        type: 'mix'
     }
 };

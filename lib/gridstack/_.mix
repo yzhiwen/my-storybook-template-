@@ -72,7 +72,9 @@ function Banner() {
   </GridItem>
 }
 
-最小mvp：先实现进行拼装验证，再用结构化的json构造生成
+最小mvp：
+- 先实现进行拼装验证，再用结构化的json构造生成
+- 见GridStackMixMvpSmaple
 function Page() {
   return <GridContainer>
     <Text />
@@ -94,4 +96,8 @@ function Banner() {
       <div />
     </BannerView>
   </GridItem>
+}
+
+function LowView() {
+    
 }

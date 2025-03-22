@@ -7,6 +7,7 @@
 export type GridStackProps = {
     disableDndContext?: boolean
     gridRoot: GridNodeProps
+    children?: any
     onGridRootChange?: (_: GridNodeProps) => void
     onGridItemRender?: (props: GridNodeProps) => React.ReactElement
 }

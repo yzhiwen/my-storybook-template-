@@ -43,7 +43,7 @@ export default function GridItem(props: GridNodeProps) {
         console.log(node.current, 'add capture listener');
         node.current!.addEventListener('pointerdown', capture, { capture: true })
         return () => {
-            node.current!.removeEventListener('pointerdown', capture,)
+            node.current?.removeEventListener('pointerdown', capture,)
         }
     }, [])
 

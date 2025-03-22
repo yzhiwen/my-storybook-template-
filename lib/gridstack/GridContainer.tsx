@@ -32,9 +32,10 @@ export default function GridContainer(props: GridNodeProps) {
         )}>
         {gridItems.map((item, index) => {
             if (item.type === 'subgrid') {
-                return <GridContainerSub  {...item}  onResizeEnd={onResizeEnd} onGridItemRender={onGridItemRender} />
+                return <GridContainerSub  {...item} onResizeEnd={onResizeEnd} onGridItemRender={onGridItemRender} />
             }
             return <GridItem {...item} key={item.id} onResizeEnd={onResizeEnd} onGridItemRender={onGridItemRender}>{item.id}</GridItem>
         })}
+        {props.children}
     </div>
 }
