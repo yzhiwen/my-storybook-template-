@@ -43,7 +43,7 @@ function LowText(props: LowSchema) {
     </GridItem>
 }
 
-export const TEST_LOW_SCHEMA: LowSchema = {
+export const TEST_LOW_SCHEMA_MVP: LowSchema = {
     componentName: 'page',
     componenProps: {},
     gridNodeProps: { id: 'grid-root', row: 5, col: 10, },

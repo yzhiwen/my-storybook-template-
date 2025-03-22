@@ -11,6 +11,7 @@ export default function GridContainerSub(props: GridNodeProps) {
         row = 5, col = 10, gap, items,
         rowStart, colStart, rowEnd, colEnd,
         onResizeEnd,
+        children,
     } = props
     const [gridItems, setGridItems] = useState<GridNodeProps[]>([])
 
@@ -77,6 +78,7 @@ export default function GridContainerSub(props: GridNodeProps) {
             }
             return <GridItem {...item} key={item.id} onResizeEnd={onResizeEnd}>{item.id}</GridItem>
         })}
+        {children}
         <div
             className="resize-handle"
             {...resizeListeners}

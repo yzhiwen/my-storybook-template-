@@ -29,7 +29,6 @@ export type GridNodeProps = {
     id: string
     style?: React.CSSProperties
     className?: string
-
     type?: "grid" | "subgrid" | "grid-item"
 
     // grid | subgrid
@@ -52,3 +51,14 @@ export type GridNodeProps = {
     children?: any
     onGridItemRender?: (props: any) => React.ReactElement
 }
+
+// 本想把GridNodeProps改成不是树结构的
+// export type GridStackV2Props = {
+//     disableDndContext?: boolean
+//     children?: any
+//     onGridRootChange?: (_: GridNodeProps) => void
+//     onGridItemRender?: (props: GridNodeProps) => React.ReactElement
+// }
+// export type GridNodeTree = GridNodeProps & {
+//     children?: GridNodeTree[]
+// }

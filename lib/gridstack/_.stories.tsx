@@ -19,6 +19,12 @@ export const GridSample: Story = {
     }
 };
 
+export const MixMvpGridSample: Story = {
+    args: {
+        type: 'mix-mvp'
+    }
+};
+
 export const MixGridSample: Story = {
     args: {
         type: 'mix'
