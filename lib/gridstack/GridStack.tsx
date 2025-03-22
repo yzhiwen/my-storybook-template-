@@ -13,8 +13,8 @@ import onHandleDragEnd from "./onHandleDragEnd";
 // TODO
 // subgrid 嵌套 subgrid
 // item 如何渲染button、input等组件
-// resize考虑偏移位置
 // resize考虑现实预测位置
+// resize subgrid
 
 // DO
 // grid-item(s)的drag
@@ -25,6 +25,7 @@ import onHandleDragEnd from "./onHandleDragEnd";
 // drag的时候显示拖拽位置跟预测位置
 // item subgrid 通过拖入创建
 // subgrid的拖入拖出grid-item
+// resize考虑偏移位置
 export default function (props: GridStackProps) {
     const {
         disableDndContext,
@@ -34,7 +35,7 @@ export default function (props: GridStackProps) {
     const [activeArea, setActiveArea] = useState<any>(null);
     const [activeStyle, setActiveStyle] = useState<any>(null);
     console.log(gridRoot, 'gridRoot');
-   
+
     const Context = disableDndContext ? EmptyContext : DndContext
 
     return <Context onDragStart={handleDragStart} onDragMove={handleDragMove} onDragEnd={handleDragEnd}>
@@ -60,7 +61,6 @@ export default function (props: GridStackProps) {
 
             root: gridRoot
         })
-        console.log("on end", gridRoot, root_, activeArea)
         onGridRootChange?.(root_)
     }
 
@@ -74,18 +74,23 @@ export default function (props: GridStackProps) {
             deltaY,
         }
         const gridItemMoveAreaRes = calcGridItemMoveArea(params)
-        console.log(gridItemMoveAreaRes, 'on move calc area res');
         if (gridItemMoveAreaRes) {
             setActiveArea(gridItemMoveAreaRes.gridItemArea)
             setActiveStyle(gridItemMoveAreaRes.overlayStyle)
         }
     }
 
-    function onGridItemResizeEnd({ id: gridItemId }: any) {
+    function onGridItemResizeEnd({ id: activeId }: any) {
         console.log(">>> on resize end");
-        // const c = document.getElementById(id)!
-        const item = document.getElementById(gridItemId)!
-        const c = item.parentElement!
+        const tree = new IndexTree(gridRoot, 'id', 'items')
+        const resizeItem = tree.get(activeId)
+        const parentId = resizeItem?.parent
+        const resizeParentItem = parentId ? tree.get(parentId) : undefined
+        if (!parentId || !resizeParentItem) return
+        const { row, col } = resizeParentItem?.node ?? {}
+
+        const item = document.getElementById(activeId)!
+        const c = document.getElementById(parentId)!
         const crect = c.getBoundingClientRect()
         const rect = item.getBoundingClientRect()
         const lastest = {
@@ -95,40 +100,13 @@ export default function (props: GridStackProps) {
             right: rect.right, bottom: rect.bottom,
         }
         const activeArea = calcGridItemArea({
-            row: 5, col: 10,
+            row, col,
             x: crect.x, y: crect.y, width: crect.width, height: crect.height,
             itemX: lastest.x, itemY: lastest.y, itemWidth: lastest.width, itemHeight: lastest.height
         })
 
-        if (true) { // parentId !== overId
-            // drag的父节点未变
-            const items_ = gridRoot.items?.map(item => {
-                if (item.id === gridItemId) {
-                    return { ...item, ...activeArea }
-                }
-                return { ...item }
-            })
-            const root_ = { ...gridRoot, items: items_ }
-            onGridRootChange?.(root_)
-        } else { // parentId !== overId
-            // TODO
-        }
-
-        // setRootGridProps(root => {
-        //     if (true) { // parentId !== overId
-        //         // drag的父节点未变
-        //         const items_ = root.items?.map(item => {
-        //             if (item.id === gridItemId) {
-        //                 return { ...item, ...activeArea }
-        //             }
-        //             return { ...item }
-        //         })
-        //         return { ...root, items: items_ }
-        //     } else { // parentId !== overId
-        //         // TODO
-        //     }
-        //     return root
-        // })
+        Object.assign(resizeItem.node, activeArea)
+        onGridRootChange?.({ ... gridRoot })
     }
 }
 

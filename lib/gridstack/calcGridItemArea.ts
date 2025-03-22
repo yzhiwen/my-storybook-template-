@@ -45,14 +45,14 @@ export default function calcGridItemArea(options: GridAreaCalc): GridAreaCalcRes
 
     let rowSpan = 1;
     while (true) {
-        if ((rowSpan + 1) * rowSize > options.itemHeight) break
+        if (options.itemHeight < (rowSpan + 1) * rowSize - rowSize / 2) break
         rowSpan += 1
     }
     let rowEnd = rowStart + rowSpan
 
     let colSpan = 1;
     while (true) {
-        if ((colSpan + 1) * colSize > options.itemWidth) break
+        if (options.itemWidth < (colSpan + 1) * colSize - colSize / 2) break
         colSpan += 1
     }
     let colEnd = colStart + colSpan
