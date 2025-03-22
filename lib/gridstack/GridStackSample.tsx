@@ -6,6 +6,7 @@ import calcGridItemArea from "./calcGridItemArea";
 import IndexTree from "./IndexTree";
 import GridItemOverlay from "./GridItemOverlay";
 import calcGridItemMoveArea from "./calcGridItemMoveArea";
+import onHandleDragEnd from "./onHandleDragEnd";
 
 export default function GridStackSample() {
 
@@ -53,42 +54,16 @@ export default function GridStackSample() {
         setDraging(false)
         setActiveStyle(null);
         setActiveArea(null);
+        const root_ = onHandleDragEnd({
+            overId: event.over?.id.toString(),
+            overProps: event.over?.data,
 
-        setRootGridProps(root => {
-            const activeId = event.active.id as string
-            const overId = event.over!.id
-            const tree = new IndexTree(root, 'id', 'items')
-            console.log(root, tree);
-            const activeTreeNode = tree.get(activeId)
-            if (!activeTreeNode) {
-                const overTreeNode = tree.get(overId.toString())
-                if (overTreeNode) {
-                    if (!overTreeNode.node.items) overTreeNode.node.items = []
-                    overTreeNode.node.items.push({ ...activeArea, id: Math.random().toString().substring(2) })
-                }
-                return { ...root }
-            }
+            activeId: event.active.id.toString(),
+            activeArea: activeArea,
 
-            const parentId = activeTreeNode.parent
-            if (parentId === overId) {
-                // drag的父节点未变
-                const items_ = root.items?.map(item => {
-                    if (item.id === activeId) {
-                        return { ...item, ...activeArea }
-                    }
-                    return { ...item }
-                })
-                return { ...root, items: items_ }
-            } else {
-                // drag的父节点改变
-                const items_ = root.items?.filter(item => item.id !== activeId)
-                const item = root.items?.find(item => item.id !== activeId)
-                const parent = root.items?.find(item => item.id === event.over?.id)!
-                parent.items = [...(parent.items ?? []), { ...item, ...activeArea }]
-                return { ...root, items: items_ }
-            }
-            return root
+            root: rootGridProps
         })
+        setRootGridProps(root_)
     }
 }
 

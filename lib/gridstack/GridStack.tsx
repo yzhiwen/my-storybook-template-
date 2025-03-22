@@ -8,6 +8,7 @@ import GridContainer from "./GridContainer";
 import calcGridItemArea from './calcGridItemArea'
 import GridItemOverlay from "./GridItemOverlay";
 import calcGridItemMoveArea from "./calcGridItemMoveArea";
+import onHandleDragEnd from "./onHandleDragEnd";
 
 // TODO
 // subgrid 嵌套 subgrid
@@ -51,37 +52,16 @@ export default function (props: GridStackProps) {
         setActiveStyle(null);
         setActiveArea(null);
 
-        // if activeParentId !== overId
-        //      remove activeId
-        //      insert overId
+        const root_ = onHandleDragEnd({
+            overId: event.over?.id.toString(),
+            overProps: event.over?.data,
 
-        setRootGridProps(root => {
-            const activeId = event.active.id as string
-            const overId = event.over!.id
-            const tree = new IndexTree(root, 'id', 'items')
-            console.log(root, tree);
-            const activeTreeNode = tree.get(activeId)!
-            const parentId = activeTreeNode.parent
+            activeId: event.active.id.toString(),
+            activeArea: activeArea,
 
-            if (parentId === overId) {
-                // drag的父节点未变
-                const items_ = root.items?.map(item => {
-                    if (item.id === activeId) {
-                        return { ...item, ...activeArea }
-                    }
-                    return { ...item }
-                })
-                return { ...root, items: items_ }
-            } else {
-                // drag的父节点改变
-                const items_ = root.items?.filter(item => item.id !== activeId)
-                const item = root.items?.find(item => item.id !== activeId)
-                const parent = root.items?.find(item => item.id === event.over?.id)!
-                parent.items = [...(parent.items ?? []), { ...item, ...activeArea }]
-                return { ...root, items: items_ }
-            }
-            return root
+            root: rootGridProps
         })
+        setRootGridProps(root_)
     }
 
     function handleDragMove(event: DragMoveEvent) {
