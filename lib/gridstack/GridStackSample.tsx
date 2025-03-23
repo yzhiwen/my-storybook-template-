@@ -21,7 +21,7 @@ export default function GridStackSample() {
         onDragMove={handleDragMove}
         onDragEnd={handleDragEnd}
     >
-        <div className="grid gap-2">
+        <div className="w-[80vw] h-[60vh] flex flex-col gap-3">
             <ExternalComponents />
             <GridStack
                 disableDndContext={draging}

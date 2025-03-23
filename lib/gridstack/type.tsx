@@ -5,6 +5,7 @@
 // 鼠标位置考虑
 
 export type GridStackProps = {
+    className?: string
     disableDndContext?: boolean
     gridRoot: GridNodeProps
     children?: any

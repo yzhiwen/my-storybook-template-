@@ -32,6 +32,7 @@ import onHandleDragEnd from "./onHandleDragEnd";
 // resize考虑偏移位置
 export default function (props: GridStackProps) {
     const {
+        className,
         disableDndContext,
         gridRoot,
         onGridRootChange,
@@ -45,7 +46,7 @@ export default function (props: GridStackProps) {
     const Context = disableDndContext ? EmptyContext : DndContext
 
     return <Context onDragStart={handleDragStart} onDragMove={handleDragMove} onDragEnd={handleDragEnd}>
-        <GridContainer {...gridRoot} children={children} onResizeEnd={onGridItemResizeEnd} onGridItemRender={onGridItemRender} />
+        <GridContainer className={className} {...gridRoot} children={children} onResizeEnd={onGridItemResizeEnd} onGridItemRender={onGridItemRender} />
         {!disableDndContext && 
         <DragOverlay>
             {activeStyle ? <GridItemOverlay id="grid-item-overlay" className="bg-blue-200" style={activeStyle} /> : null}

@@ -3,7 +3,12 @@ import GridContainer from "./GridContainer";
 import GridItem from "./GridItem";
 import GridStack from "./GridStack";
 import type { GridNodeProps } from "./type";
-import ReactFullpage from "@fullpage/react-fullpage";
+
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination'
+import { Swiper, SwiperSlide } from "swiper/react";
+import { FreeMode, Mousewheel, Navigation, Pagination } from 'swiper/modules';
 
 export type LowSchema = Exclude<GridNodeProps, 'items'> & {
     componentName: string;
@@ -72,16 +77,19 @@ export const TEST_LOW_SCHEMA: LowSchema = {
 export function LowPage(props: any) {
     const [rootGridProps, setRootGridProps] = useState<GridNodeProps>(TEST_LOW_SCHEMA)
 
-    return <GridStack
-        gridRoot={rootGridProps!}
-        onGridRootChange={(_) => {
-            console.log(_, 'low page');
-            setRootGridProps(_)
-        }}
-        onGridItemRender={(props: any) => {
-            return <LowView {...props} />
-        }}
-    />
+    return <div className="w-[80vw] h-[60vh]">
+        <GridStack
+            gridRoot={rootGridProps!}
+            onGridRootChange={(_) => {
+                console.log(_, 'low page');
+                setRootGridProps(_)
+            }}
+            onGridItemRender={(props: any) => {
+                return <LowView {...props} />
+            }}
+        />
+    </div>
+
 }
 
 export function LowView(props: LowSchema) {
@@ -117,32 +125,44 @@ function LowBanner(props: any) {
     const { rawProps } = props
     const { items } = rawProps
     return <div
+        className="w-full h-full"
+        // onPointerDownCapture={(e) => {
+        //     e.stopPropagation()
+        // }}
+        // onPointerMoveCapture={(e) => {
+        //     e.stopPropagation()
+        // }}
         onPointerDown={(e) => {
             e.stopPropagation()
         }}>
-        <ReactFullpage
-            debug={false}
-            slidesNavigation={true}
-            controlArrows={false}
-            render={() => (
-                <ReactFullpage.Wrapper>
-                    <div className="section" id="section1">
-                        <div className="slide">
-                            <LowPageSub {...items[0]} />
-                        </div>
-                        <div className="slide">
-                            <LowPageSub {...items[1]} />
-                        </div>
-                        <div className="slide"><h1>Horizontal Slides</h1></div>
-                    </div>
-                </ReactFullpage.Wrapper>
-            )}
-            licenseKey="OPEN-SOURCE-GPLV3-LICENSE"
-            credits={{
-                enabled: undefined,
-                label: '',
-                position: 'right'
-            }} />
+        <Swiper
+            className="w-full h-full"
+            direction={'horizontal'}
+            // 每页显示slide数量
+            // slidesPerView={3}
+            // slidesPerView={'auto'}
+            // centeredSlides={true} // 如果slidesPerView为3，第一个slide显示居中
+            // freeMode={true} // 不知道啥效果
+
+            modules={[Navigation, Pagination, Mousewheel, FreeMode]}
+            pagination={{ clickable: true, dynamicBullets: true }}
+            navigation={false}
+            mousewheel={true} // 跟随滚轮滚动
+            // cssMode={true} // 不可鼠标滚动
+            // allowTouchMove 改为false之后，不可鼠标滚动
+            allowTouchMove={false} // https://stackoverflow.com/questions/44115954/swiper-touch-events-enable-click-but-disable-drag
+
+        >
+            <SwiperSlide className="!flex justify-center items-center">
+                {/* <div onPointerDown={() => alert('click')}>dsgs</div> */}
+                <LowPageSub {...items[0]} />
+            </SwiperSlide>
+            <SwiperSlide>
+                <LowPageSub {...items[1]} />
+            </SwiperSlide>
+            <SwiperSlide>slide 3</SwiperSlide>
+            <SwiperSlide>slide 4</SwiperSlide>
+        </Swiper>
     </div>
     return <div>banner</div>
 }

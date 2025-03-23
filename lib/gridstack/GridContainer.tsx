@@ -26,9 +26,9 @@ export default function GridContainer(props: GridNodeProps) {
     return <div id={id}
         ref={setNodeRef}
         className={classNames(
-            className,
-            `grid w-[500px] h-[300px] bg-amber-200`,
+            `grid w-full h-full bg-amber-200`,
             `grid-cols-${col} grid-rows-${row}`,
+            className,
         )}>
         {gridItems.map((item, index) => {
             if (item.type === 'subgrid') {
