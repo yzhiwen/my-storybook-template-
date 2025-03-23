@@ -31,24 +31,25 @@ export default function GridItem(props: GridNodeProps) {
         },
     })
 
-    useEffect(() => {
-        // const capture = (e: Event) => {
-        //     console.log('pointerdown capture');
-        //     const ele = e.target as HTMLElement
-        //     ele.style.border = '2px dashed green'
-        //     setTimeout(() => {
-        //         ele.style.border = ''
-        //     }, 5000)
-        // }
-        // console.log(node.current, 'add capture listener');
-        // node.current!.addEventListener('pointerdown', capture, { capture: true })
-        // return () => {
-        //     node.current?.removeEventListener('pointerdown', capture,)
-        // }
-    }, [])
-
     return <div
         ref={setNodeRef}
+        onPointerDownCapture={(e) => {
+            // console.log('on grid item down capture');
+            const ele = e.target as HTMLElement
+            const onPointerMoveCapture = (e: Event) => {
+                clearTimeout(handle)
+            }
+            // ele.addEventListener
+            document.addEventListener('pointermove', onPointerMoveCapture, { capture: true })
+            const handle = setTimeout(() => {
+                // console.log('on grid item down capture', '触发drag事件');
+                document.removeEventListener('pointermove', onPointerMoveCapture)
+                listeners?.['onPointerDown']?.(e)
+            }, 500)
+        }}
+        // onPointerMoveCapture={(e) => {
+        //     console.log('on grid item move capture'); // 只要鼠标在element上，会一直触发
+        // }}
         {...listeners}
         {...attributes}
         className={classNames(
