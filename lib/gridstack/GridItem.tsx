@@ -76,6 +76,7 @@ export default function GridItem(props: GridNodeProps) {
                 height: '10px',
                 backgroundColor: 'grey',
                 cursor: 'nwse-resize',
+                zIndex: 100,
             }}
         ></div>
     </div>

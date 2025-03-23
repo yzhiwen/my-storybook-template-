@@ -9,6 +9,7 @@ export default function (props: any) {
             ele.style.position = "absolute"
             ele.style.border = '2px dashed blue'
             ele.style.borderRadius = '6px'
+            ele.style.zIndex = `100`
             document.body.append(ele)
             ref.current.ele = ele
         }

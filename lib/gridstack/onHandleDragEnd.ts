@@ -28,6 +28,12 @@ export default function onHandleDragEnd(params: Params) {
         return { ...root }
     }
 
+    // 拖拽节点是父节点不能放入自身子节点，操作应该无效。activeId放入overId
+    // 还有一种符合逻辑的处理是activeId拖拽的时候，activeId的子节点droppable应该被禁止。
+    if (overId && tree.isInParentList(overId, activeId)) {
+        return { ...root }
+    }
+
     const parentId = activeTreeNode.parent
     if (parentId === overId) {
         // drag的父节点未变

@@ -77,4 +77,19 @@ export default class IndexTree {
     buildRawTree() {
         // TODO
     }
+
+    isInParentList(childId: string, checkId: string) {
+        let id = childId
+        let found = false
+        while(true) {
+            const indexNode = this.get(id)
+            if (!indexNode || !indexNode.parent) break
+            id = indexNode.parent
+            if (id === checkId) {
+                found = true
+                break
+            }
+        }
+        return found
+    }
 }
