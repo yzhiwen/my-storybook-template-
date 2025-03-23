@@ -40,15 +40,17 @@ export default function (props: GridStackProps) {
     } = props
     const [activeArea, setActiveArea] = useState<any>(null);
     const [activeStyle, setActiveStyle] = useState<any>(null);
-    console.log(gridRoot, 'gridRoot');
+    // console.log(gridRoot, 'gridRoot');
 
     const Context = disableDndContext ? EmptyContext : DndContext
 
     return <Context onDragStart={handleDragStart} onDragMove={handleDragMove} onDragEnd={handleDragEnd}>
         <GridContainer {...gridRoot} children={children} onResizeEnd={onGridItemResizeEnd} onGridItemRender={onGridItemRender} />
+        {!disableDndContext && 
         <DragOverlay>
             {activeStyle ? <GridItemOverlay id="grid-item-overlay" className="bg-blue-200" style={activeStyle} /> : null}
         </DragOverlay>
+        }
     </Context>
 
     function handleDragStart(event: DragStartEvent) {
