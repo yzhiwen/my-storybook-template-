@@ -1,14 +1,16 @@
 import { DndContext, DragOverlay, useDraggable, useDroppable, type DragEndEvent, type DragMoveEvent, type DragStartEvent } from "@dnd-kit/core";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useContext, useEffect, useRef, useState } from "react";
 import useResizable from "../dnd/useResizable";
 import classNames from "classnames";
 import type { GridNodeProps } from "./type";
+import { GridStackPayloadContext } from "./GridStackContext";
 
 export default function GridItem(props: GridNodeProps) {
-    const { id, rowStart, colStart, rowEnd, colEnd, onResizeEnd, onGridItemRender } = props
+    const { id, rowStart, colStart, rowEnd, colEnd, } = props
 
     const [size, setSize] = useState<{ width: number, height: number } | undefined>()
     const [isResizing, setIsResizing] = useState(false)
+    const { onHandleResizeEnd, onGridItemRender } = useContext(GridStackPayloadContext)
 
     const { node, isDragging, attributes, listeners, setNodeRef, transform } = useDraggable({
         id,
@@ -27,7 +29,7 @@ export default function GridItem(props: GridNodeProps) {
         onResizeEnd(size) {
             setSize(undefined)
             setIsResizing(false)
-            onResizeEnd?.({ id })
+            onHandleResizeEnd?.({ id })
         },
     })
 
@@ -62,8 +64,6 @@ export default function GridItem(props: GridNodeProps) {
             ...(props?.style ?? {}),
             ...(size ? { width: `${size.width}px`, height: `${size.height}px` } : {}),
         }}>
-        {/* {id === 'grid-item-1' ? <button className="w-[30px] h-[30px]">ccc</button> : props.children} */}
-        {/* <input className="w-full h-full" /> */}
         {onGridItemRender ? onGridItemRender?.(props) : props.children}
         <div
             className="resize-handle"

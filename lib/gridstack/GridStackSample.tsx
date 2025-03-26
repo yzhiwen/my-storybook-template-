@@ -1,84 +1,15 @@
 import { DndContext, DragOverlay, useDraggable, type DragEndEvent, type DragMoveEvent, type DragStartEvent } from "@dnd-kit/core";
 import GridStack from "./GridStack";
 import { TestGridNodeProps, type GridNodeProps } from "./type";
-import { useState } from "react";
-import calcGridItemArea from "./calcGridItemArea";
-import IndexTree from "./IndexTree";
-import GridItemOverlay from "./GridItemOverlay";
-import calcGridItemMoveArea from "./calcGridItemMoveArea";
-import onHandleDragEnd from "./onHandleDragEnd";
+import GridStackContext from "./GridStackContext";
 
 export default function GridStackSample() {
-
-    const [draging, setDraging] = useState(false)
-
-    const [activeArea, setActiveArea] = useState<any>(null);
-    const [activeStyle, setActiveStyle] = useState<any>(null)
-    const [rootGridProps, setRootGridProps] = useState<GridNodeProps>(TestGridNodeProps)
-
-    return <DndContext
-        onDragStart={handleDragStart}
-        onDragMove={handleDragMove}
-        onDragEnd={handleDragEnd}
-    >
+    return <GridStackContext defaultGridNodeProps={TestGridNodeProps} >
         <div className="w-[80vw] h-[60vh] flex flex-col gap-3">
             <ExternalComponents />
-            <GridStack
-                disableDndContext={draging}
-                gridRoot={rootGridProps}
-                onGridRootChange={(_) => setRootGridProps(_)}
-                // onGridItemRender={(props) => {
-                //     return <input className="w-full h-full" onPointerDown={(e) => e.stopPropagation()} />
-                // }} 
-                />
+            <GridStack className="!h-0 flex-1" />
         </div>
-        <DragOverlay>
-            {activeStyle ? <GridItemOverlay id="grid-item-overlay" className="bg-blue-200" style={activeStyle} /> : null}
-        </DragOverlay>
-    </DndContext>
-
-    function handleDragStart(event: DragStartEvent) {
-        setDraging(true)
-        const target = event.activatorEvent.target as HTMLElement
-        setActiveStyle({
-            ...activeStyle,
-            width: target.getBoundingClientRect().width,
-            height: target.getBoundingClientRect().height,
-        })
-    }
-
-    function handleDragMove(event: DragMoveEvent) {
-        const { x: deltaX, y: deltaY } = event.delta
-        const params = {
-            overId: event.over?.id?.toString(),
-            overProps: event.over?.data.current,
-            activeId: event.active.id.toString(),
-            deltaX,
-            deltaY,
-        }
-        const gridItemMoveAreaRes = calcGridItemMoveArea(params)
-        if (gridItemMoveAreaRes) {
-            setActiveArea(gridItemMoveAreaRes.gridItemArea)
-            setActiveStyle(gridItemMoveAreaRes.overlayStyle)
-        }
-    }
-
-    function handleDragEnd(event: DragEndEvent) {
-        setDraging(false)
-        setActiveStyle(null);
-        setActiveArea(null);
-        const root_ = onHandleDragEnd({
-            overId: event.over?.id.toString(),
-            overProps: event.over?.data.current,
-
-            activeId: event.active.id.toString(),
-            activeProps: event.active.data.current,
-            activeArea: activeArea,
-
-            root: rootGridProps
-        })
-        setRootGridProps(root_)
-    }
+    </GridStackContext>
 }
 
 function ExternalComponents() {

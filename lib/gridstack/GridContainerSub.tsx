@@ -1,22 +1,23 @@
 import { DndContext, DragOverlay, useDraggable, useDroppable, type DragEndEvent, type DragMoveEvent, type DragStartEvent } from "@dnd-kit/core";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useContext, useEffect, useRef, useState } from "react";
 import useResizable from "../dnd/useResizable";
 import classNames from "classnames";
 import type { GridNodeProps } from "./type";
 import GridItem from "./GridItem";
+import { GridStackPayloadContext } from "./GridStackContext";
 
 export default function GridContainerSub(props: GridNodeProps) {
     const {
         id, style, className,
         row = 5, col = 10, gap, items,
         rowStart, colStart, rowEnd, colEnd,
-        onResizeEnd,
         children,
     } = props
     const [gridItems, setGridItems] = useState<GridNodeProps[]>([])
 
     const [size, setSize] = useState<{ width: number, height: number } | undefined>()
     const [isResizing, setIsResizing] = useState(false)
+    const { onHandleResizeEnd } = useContext(GridStackPayloadContext)
 
     const { node: nodeDrag, isDragging, attributes, listeners: dragListeners, setNodeRef: setNodeRefDrag, transform } = useDraggable({
         id,
@@ -42,7 +43,7 @@ export default function GridContainerSub(props: GridNodeProps) {
         onResizeEnd(size) {
             setSize(undefined)
             setIsResizing(false)
-            onResizeEnd?.({ id })
+            onHandleResizeEnd?.({ id })
         },
     })
 
@@ -76,7 +77,7 @@ export default function GridContainerSub(props: GridNodeProps) {
             if (item.type === 'subgrid') {
                 return <GridContainerSub {...item} items={item.items} />
             }
-            return <GridItem {...item} key={item.id} onResizeEnd={onResizeEnd}>{item.id}</GridItem>
+            return <GridItem {...item} key={item.id} />
         })}
         {children}
         <div

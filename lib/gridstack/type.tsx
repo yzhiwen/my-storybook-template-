@@ -6,11 +6,7 @@
 
 export type GridStackProps = {
     className?: string
-    disableDndContext?: boolean
-    gridRoot: GridNodeProps
     children?: any
-    onGridRootChange?: (_: GridNodeProps) => void
-    onGridItemRender?: (props: GridNodeProps) => React.ReactElement
 }
 
 export const TestGridNodeProps: GridNodeProps = {
@@ -45,12 +41,7 @@ export type GridNodeProps = {
 
     items?: GridNodeProps[]
 
-    // 保留
-    // grid-item
-    onResizeEnd?: (data: any) => void
-
     children?: any
-    onGridItemRender?: (props: any) => React.ReactElement
 }
 
 // 本想把GridNodeProps改成不是树结构的
