@@ -3,6 +3,7 @@ import GridContainer from "./GridContainer";
 import GridItem from "./GridItem";
 import GridStack from "./GridStack";
 import type { GridNodeProps } from "./type";
+import GridStackContext from "./GridStackContext";
 
 export type LowSchema = {
     componentName: string;
@@ -12,7 +13,6 @@ export type LowSchema = {
 }
 
 export function LowView(props: LowSchema) {
-    console.log(props, 'low view');
     const { componentName, gridNodeProps, componenProps, children } = props
     const comps: any = {
         'page': LowPage,
@@ -26,12 +26,9 @@ export function LowView(props: LowSchema) {
 function LowPage(props: LowSchema) {
     const { gridNodeProps, children } = props
     console.log(props, 'low page');
-    return <GridStack gridRoot={gridNodeProps!}>
-        {children?.map(item => <LowView {...item} />)}
-    </GridStack>
-    // return <GridContainer {...gridNodeProps!}>
-    //     {children?.map(item => <LowView {...item} />)}
-    // </GridContainer>
+    return <GridStackContext defaultGridNodeProps={gridNodeProps!}>
+        <GridStack>{children?.map(item => <LowView {...item} />)}</GridStack>
+    </GridStackContext>
 }
 
 function LowText(props: LowSchema) {

@@ -9,6 +9,7 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination'
 import { Swiper, SwiperSlide } from "swiper/react";
 import { FreeMode, Mousewheel, Navigation, Pagination } from 'swiper/modules';
+import GridStackContext from "./GridStackContext";
 
 export type LowSchema = Exclude<GridNodeProps, 'items'> & {
     componentName: string;
@@ -74,22 +75,14 @@ export const TEST_LOW_SCHEMA: LowSchema = {
     ]
 }
 
-export function LowPage(props: any) {
+export function LowCodeEditor(props: any) {
     const [rootGridProps, setRootGridProps] = useState<GridNodeProps>(TEST_LOW_SCHEMA)
 
     return <div className="w-[80vw] h-[60vh]">
-        <GridStack
-            gridRoot={rootGridProps!}
-            onGridRootChange={(_) => {
-                console.log(_, 'low page');
-                setRootGridProps(_)
-            }}
-            onGridItemRender={(props: any) => {
-                return <LowView {...props} />
-            }}
-        />
+        <GridStackContext defaultGridNodeProps={rootGridProps!} onGridItemRender={(props) => <LowView {...props} />}>
+            <GridStack  />
+        </GridStackContext>
     </div>
-
 }
 
 export function LowView(props: LowSchema) {
@@ -109,16 +102,8 @@ function LowText(props: any) {
 }
 
 export function LowPageSub(props: any) {
-    // const [rootGridProps, setRootGridProps] = useState<GridNodeProps>(props)
-
-    return <GridStack
-        disableDndContext
-        gridRoot={props!}
-        // onGridRootChange={(_) => setRootGridProps(_)}
-        onGridItemRender={(props: any) => {
-            return <LowView {...props} />
-        }}
-    />
+    // console.log(props, 'LowPageSub');
+    return <GridContainer {...props} />
 }
 
 function LowBanner(props: any) {
