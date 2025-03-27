@@ -10,17 +10,19 @@ import 'swiper/css/pagination'
 import { Swiper, SwiperSlide } from "swiper/react";
 import { FreeMode, Mousewheel, Navigation, Pagination } from 'swiper/modules';
 import GridStackContext from "./GridStackContext";
+import GridExternal from "./GridExternal";
+import classNames from "classnames";
 
 export type LowSchema = Exclude<GridNodeProps, 'items'> & {
     componentName: string;
-    componenProps?: any;
+    componentProps?: any;
     items?: LowSchema[];
 }
 // 对比上面LowSchema，这个LowSchemaMVP，会有两个树
 // 那么势必得将GridNodeProps这个树去掉，感觉比较麻烦，后面再想想
 // export type LowSchemaMVP = {
 //     componentName: string;
-//     componenProps?: any;
+//     componentProps?: any;
 //     gridNodeProps?: GridNodeProps
 //     children?: LowSchema[];
 // }
@@ -30,33 +32,33 @@ const rid = () => Math.random().toString().substring(2)
 export const TEST_LOW_SCHEMA: LowSchema = {
     id: rid(),
     componentName: 'page',
-    componenProps: {},
+    componentProps: {},
     row: 5,
     col: 10,
     items: [
         {
             id: rid(),
             componentName: 'text',
-            componenProps: { value: 'text组件文本内容' },
+            componentProps: { value: 'text组件文本内容' },
             type: 'grid-item', rowStart: 1, rowEnd: 2, colStart: 1, colEnd: 4,
         },
         {
             id: rid(),
             componentName: 'banner',
-            componenProps: {},
+            componentProps: {},
             type: 'grid-item', rowStart: 3, rowEnd: 5, colStart: 1, colEnd: 10,
             items: [
                 {
                     id: 'banner-root-1',
                     componentName: 'page',
-                    componenProps: {},
+                    componentProps: {},
                     row: 5,
                     col: 10,
                     items: [
                         {
                             id: 'banner-root-1-item-text',
                             componentName: 'text',
-                            componenProps: { value: 'text组件文本内容' },
+                            componentProps: { value: 'text组件文本内容' },
                             type: 'grid-item', rowStart: 1, rowEnd: 2, colStart: 1, colEnd: 4,
                         },
                     ]
@@ -64,7 +66,7 @@ export const TEST_LOW_SCHEMA: LowSchema = {
                 {
                     id: 'banner-root-2',
                     componentName: 'page',
-                    componenProps: {},
+                    componentProps: {},
                     row: 5,
                     col: 10,
                     items: [
@@ -79,26 +81,52 @@ export function LowCodeEditor(props: any) {
     const [rootGridProps, setRootGridProps] = useState<GridNodeProps>(TEST_LOW_SCHEMA)
 
     return <div className="w-[80vw] h-[60vh]">
-        <GridStackContext defaultGridNodeProps={rootGridProps!} onGridItemRender={(props) => <LowView {...props} />}>
-            <GridStack  />
+        <GridStackContext
+            defaultGridNodeProps={rootGridProps!}
+            onGridItemRender={(props) => {
+                return <LowView {...props} />
+            }}>
+            <div className="flex flex-row gap-2 mb-2">
+                <GridExternal
+                    id="text"
+                    componentName='text'
+                    componentProps={{ value: '我是文本' }} />
+                <GridExternal
+                    id="image"
+                    componentName='image'
+                    componentProps={{ value: '我是文本' }} />
+            </div>
+            <GridStack />
         </GridStackContext>
     </div>
 }
 
 export function LowView(props: LowSchema) {
-    const { componentName, componenProps } = props
+    const { componentName, componentProps } = props
     const comps: any = {
         'text': LowText,
+        'image': LowImage,
         'banner': LowBanner,
     }
     const LowComp = comps[componentName]
-    if (!LowComp) return <>组件未实现：{componentName}</>
-    return <LowComp {...componenProps} rawProps={props} />
+    if (!LowComp) {
+        return <>组件未实现：{componentName}</>
+    }
+    return <LowComp {...componentProps} rawProps={props} />
 }
 
 function LowText(props: any) {
     const { value } = props
     return <span className="bg-amber-600 w-full h-full block">{value}</span>
+}
+
+function LowImage(props: any) {
+    const url = 'https://cdn2.thecatapi.com/images/b12.jpg'
+    return <div className={classNames(
+        'w-full h-full bg-contain bg-center bg-no-repeat',
+        `bg-[url(${url})]`,
+    )}
+    />
 }
 
 export function LowPageSub(props: any) {

@@ -77,6 +77,7 @@ export default function GridStackContext(props: Props) {
             overProps: event.over?.data.current,
 
             activeId: event.active.id.toString(),
+            activeProps: event.active.data.current,
             activeArea: activeArea,
 
             root: rootGridProps

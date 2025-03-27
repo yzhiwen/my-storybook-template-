@@ -24,6 +24,10 @@ import { GridStackPayloadContext } from "./GridStackContext";
 </GridStackContext>
 */
 
+// griditem、gridsub能力增强：增加点击回调，增加悬浮回调
+// gridsub插入节点回调，表单使用。进一步，grid-tree结构变动回调
+// 新增组件：基本组件：文本、图片、视频、按钮、swiper就够了
+
 // DO
 // grid-item(s)的drag
 // grid-item(s)的resize

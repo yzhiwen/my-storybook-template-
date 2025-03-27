@@ -6,7 +6,7 @@ import type { GridNodeProps } from "./type";
 import { GridStackPayloadContext } from "./GridStackContext";
 
 export default function GridItem(props: GridNodeProps) {
-    const { id, rowStart, colStart, rowEnd, colEnd, } = props
+    const { id, className, rowStart, colStart, rowEnd, colEnd, } = props
 
     const [size, setSize] = useState<{ width: number, height: number } | undefined>()
     const [isResizing, setIsResizing] = useState(false)
@@ -56,6 +56,7 @@ export default function GridItem(props: GridNodeProps) {
         {...attributes}
         className={classNames(
             "relative grid-item bg-blue-200",
+            className,
             // isDragging ? '' : '!opacity-100'
         )}
         {...props}
