@@ -22,6 +22,7 @@ export default function GridContainer(props: GridNodeProps) {
     return <div id={id}
         ref={setNodeRef}
         className={classNames(
+            `gridstack-container`,
             `grid w-full h-full bg-amber-200`,
             `grid-cols-${col} grid-rows-${row}`,
             className,

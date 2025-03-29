@@ -55,7 +55,9 @@ export default function GridItem(props: GridNodeProps) {
         {...listeners}
         {...attributes}
         className={classNames(
-            "relative grid-item bg-blue-200",
+            "gridstack-item",
+            "box-border border-1 border-transparent",
+            "relative ",
             className,
             // isDragging ? '' : '!opacity-100'
         )}

@@ -61,6 +61,7 @@ export default function GridContainerSub(props: GridNodeProps) {
         {...dragListeners}
         {...attributes}
         className={classNames(
+            'gridstack-sub',
             `relative grid bg-blue-100`,
             // subgrid的时候，width/height无效
             size ? `` : `grid-cols-subgrid grid-rows-subgrid`,

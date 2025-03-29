@@ -6,6 +6,8 @@ import onHandleDragEnd from "./onHandleDragEnd"
 import GridItemOverlay from "./GridItemOverlay"
 import calcGridItemArea from "./calcGridItemArea"
 import IndexTree from "./IndexTree"
+import domer from "./dom"
+import classNames from "classnames"
 
 type GridStackPayload = {
     rootGridProps: GridNodeProps
@@ -17,13 +19,17 @@ type GridStackPayload = {
 export const GridStackPayloadContext = React.createContext<GridStackPayload>({} as any)
 
 type Props = {
+    className?: string
     defaultGridNodeProps: GridNodeProps
     children?: any
     onGridItemRender?: (props: any) => React.ReactElement
 }
 
+let lastest: HTMLElement | undefined = undefined
+let lastestClick: HTMLElement | undefined = undefined
+
 export default function GridStackContext(props: Props) {
-    const { defaultGridNodeProps, onGridItemRender } = props
+    const { className, defaultGridNodeProps, onGridItemRender } = props
     const [rootGridProps, setRootGridProps] = useState<GridNodeProps>(defaultGridNodeProps)
     const [activeArea, setActiveArea] = useState<any>(null)
     const [activeStyle, setActiveStyle] = useState<any>(null)
@@ -35,7 +41,13 @@ export default function GridStackContext(props: Props) {
         onGridItemRender
     }}>
         <DndContext onDragStart={handleDragStart} onDragMove={handleDragMove} onDragEnd={handleDragEnd}>
-            {props.children}
+            <div className={classNames("w-full h-full relative", className)}
+                onPointerDownCapture={handleGridItemClick}
+                onMouseOver={handleGridItemHover}
+                onMouseOut={handleGridItemHoverOut}
+            >
+                {props.children}
+            </div>
             <DragOverlay>
                 {activeStyle ? <GridItemOverlay id="grid-item-overlay" className="bg-blue-200" style={activeStyle} /> : null}
             </DragOverlay>
@@ -116,6 +128,39 @@ export default function GridStackContext(props: Props) {
         // onGridRootChange?.({ ...gridRoot })
     }
 
+    function handleGridItemClick(e: any) {
+        if (lastestClick !== undefined) {
+            lastestClick.style.border = '1px solid transparent'
+            lastestClick.style.zIndex = `auto`
+        }
+        const t = domer
+            .parents(e.target as any)
+            .find(item => item.className.includes('gridstack-item'))
+        if (t) {
+            t.style.border = '1px solid black'
+            t.style.zIndex = `2000`
+            lastestClick = t
+        }
+    }
+
+    function handleGridItemHover(e: any) {
+        const t = domer
+            .parents(e.target as any)
+            .find(item => item.className.includes('gridstack-item'))
+        if (lastest !== undefined && lastest !== lastestClick) {
+            lastest.style.border = '1px dashed transparent'
+        }
+        if (t !== undefined && t !== lastestClick) {
+            t.style.border = '1px dashed red'
+            lastest = t
+        }
+    }
+
+    function handleGridItemHoverOut(e: any) {
+        if (lastest !== undefined && lastest !== lastestClick) {
+            lastest.style.border = '1px dashed transparent'
+        }
+    }
 }
 
 function T() {
