@@ -30,6 +30,16 @@ import { GridStackPayloadContext } from "./GridStackContext";
 // GridStack组件能力增强，router组件，弹框组件
 // griditem、gridsub能力增强：动画能力
 
+// width跟height如何确定，col跟row如何确定？
+// grid、subgrid、grid-item的这几个都怎么确定？
+// 按照react-grid-layout，重构grid
+
+// 有问题的思路：
+//  grid的row的大小要固定，数量跟随高度/rowSize计算来
+//  评估:10000px / 5px每行 = 2000行，24寸显示器分比率1980x1080，10000px大概十屏
+//  grid的width默认w-full，height默认给min-height
+//  grid的col的数量要固定，不跟随width变动，不然后期怎么做多设配，所以给个默认的先
+
 // DO
 // grid-item(s)的drag
 // grid-item(s)的resize
@@ -45,8 +55,8 @@ export default function (props: GridStackProps) {
     const { rootGridProps } = useContext(GridStackPayloadContext)
 
     return <GridContainer
-        className={className}
         children={children}
         {...rootGridProps}
+        className={rootGridProps.className + ' ' + className + ' gridstack-root'}
     />
 }
