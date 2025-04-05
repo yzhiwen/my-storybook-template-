@@ -3,17 +3,19 @@ import React, { useContext, useEffect, useState } from "react"
 import type { GridNodeProps, PositionParams } from "./type"
 import calcGridItemMoveArea from "./calcGridItemMoveArea"
 import onHandleDragEnd from "./onHandleDragEnd"
-import GridItemOverlay from "./GridItemOverlay"
 import calcGridItemArea from "./calcGridItemArea"
 import IndexTree from "./IndexTree"
 import domer from "./dom"
 import classNames from "classnames"
-import { calcGridItemPosition, calcXY } from "./utils"
+import { calcGridItemPosition, calcWH, calcXY } from "./utils"
+import GridItemDragOverlay from "./GridItemDragOverlay"
+import GridItemOutletOverlay from "./GridItemOutletOverlay"
 
 type GridStackPayload = {
     rootGridProps: GridNodeProps
     rootGridTree: IndexTree
     setRootGridProps: React.Dispatch<React.SetStateAction<GridNodeProps>>
+    onHandleResizeMove?: (data: any) => void
     onHandleResizeEnd?: (data: any) => void
     onGridItemRender?: (props: any) => React.ReactElement
 }
@@ -41,6 +43,7 @@ export default function GridStackContext(props: Props) {
         rootGridProps,
         rootGridTree,
         setRootGridProps,
+        onHandleResizeMove,
         onHandleResizeEnd,
         onGridItemRender
     }}>
@@ -57,9 +60,9 @@ export default function GridStackContext(props: Props) {
             >
                 {props.children}
             </div>
-            <DragOverlay>
-                {activeStyle ? <GridItemOverlay id="grid-item-overlay" className="bg-blue-200" style={activeStyle} /> : null}
-            </DragOverlay>
+            <GridItemDragOverlay id="grid-item-drag-overlay" style={activeStyle} />
+            <GridItemOutletOverlay style={activeStyle} />
+            {/* {activeStyle ? <GridItemOverlay id="grid-resize-overlay" className="bg-blue-300" style={activeStyle} /> : null} */}
         </DndContext>
     </GridStackPayloadContext.Provider>
 
@@ -157,38 +160,81 @@ export default function GridStackContext(props: Props) {
 
             root: rootGridProps
         })
-        // console.log(root_);
         setRootGridProps(root_)
     }
 
-    function onHandleResizeEnd({ id: activeId }: any) {
-        console.log(">>> on resize end");
-        const tree = new IndexTree(rootGridProps, 'id', 'items')
-        const resizeItem = tree.get(activeId)
-        const parentId = resizeItem?.parent
-        const resizeParentItem = parentId ? tree.get(parentId) : undefined
-        if (!parentId || !resizeParentItem) return
-        const { row, col } = resizeParentItem?.node ?? {}
+    function onHandleResizeMove(data: any) {
+        const { id: activeId, width: width_, height: height_ } = data
+        const width = Math.max(width_, 0)
+        const height = Math.max(height_, 0)
+        const overId = rootGridTree.get(activeId)?.parent!
+        if (!activeId || !overId) return
 
-        const item = document.getElementById(activeId)!
-        const c = document.getElementById(parentId)!
-        const crect = c.getBoundingClientRect()
-        const rect = item.getBoundingClientRect()
-        const lastest = {
-            width: rect.width, height: rect.height,
-            x: rect.x, y: rect.y,
-            left: rect.left, top: rect.top,
-            right: rect.right, bottom: rect.bottom,
+        const activeProps = rootGridTree.get(activeId)?.node!
+        const overProps = rootGridTree.get(overId)?.node!
+
+        const overEle = document.getElementById(overId)!
+        
+        const posParams: PositionParams = {
+            margin: [0, 0],// 固定
+            containerPadding: [0, 0],// 固定
+            containerWidth: overEle.getBoundingClientRect().width, // 从父节点取
+            cols: overProps.col, // 从父节点取
+            rowHeight: 40, // 固定
+            maxRows: Infinity, // 固定
         }
-        const activeArea = calcGridItemArea({
-            row, col,
-            x: crect.x, y: crect.y, width: crect.width, height: crect.height,
-            itemX: lastest.x, itemY: lastest.y, itemWidth: lastest.width, itemHeight: lastest.height
+
+        const { w, h } = calcWH(posParams, width, height, activeProps.x, activeProps.y, '')
+
+        const pos = calcGridItemPosition(
+            posParams,
+            activeProps.x!,
+            activeProps.y!,
+            w!,
+            h!,
+        );
+
+        setActiveStyle({
+            ...activeStyle,
+            // overlay展示预测的位置
+            x: pos.left + overEle.getBoundingClientRect().left,
+            y: pos.top + overEle.getBoundingClientRect().top,
+            width: pos.width,
+            height: pos.height,
         })
 
-        Object.assign(resizeItem.node, activeArea)
+        // console.log('on reisze move', activeId, posParams, activeProps.x, activeProps.y, w, h);
+        Object.assign(rootGridTree.get(activeId)!.node, { w, h })
         setRootGridProps({ ...rootGridProps })
-        // onGridRootChange?.({ ...gridRoot })
+    }
+
+    function onHandleResizeEnd({ id: activeId }: any) {
+        setActiveStyle(null)
+        // const tree = new IndexTree(rootGridProps, 'id', 'items')
+        // const resizeItem = tree.get(activeId)
+        // const parentId = resizeItem?.parent
+        // const resizeParentItem = parentId ? tree.get(parentId) : undefined
+        // if (!parentId || !resizeParentItem) return
+        // const { row, col } = resizeParentItem?.node ?? {}
+
+        // const item = document.getElementById(activeId)!
+        // const c = document.getElementById(parentId)!
+        // const crect = c.getBoundingClientRect()
+        // const rect = item.getBoundingClientRect()
+        // const lastest = {
+        //     width: rect.width, height: rect.height,
+        //     x: rect.x, y: rect.y,
+        //     left: rect.left, top: rect.top,
+        //     right: rect.right, bottom: rect.bottom,
+        // }
+        // const activeArea = calcGridItemArea({
+        //     row, col,
+        //     x: crect.x, y: crect.y, width: crect.width, height: crect.height,
+        //     itemX: lastest.x, itemY: lastest.y, itemWidth: lastest.width, itemHeight: lastest.height
+        // })
+
+        // Object.assign(resizeItem.node, activeArea)
+        // setRootGridProps({ ...rootGridProps })
     }
 
     function handleGridItemClick(e: any) {

@@ -18,7 +18,7 @@ export default function GridContainerSub(props: GridNodeProps) {
 
     const [size, setSize] = useState<{ width: number, height: number } | undefined>()
     const [isResizing, setIsResizing] = useState(false)
-    const { rootGridTree, onHandleResizeEnd } = useContext(GridStackPayloadContext)
+    const { rootGridTree, onHandleResizeMove, onHandleResizeEnd } = useContext(GridStackPayloadContext)
 
     const { node: nodeDrag, isDragging, attributes, listeners: dragListeners, setNodeRef: setNodeRefDrag, transform } = useDraggable({
         id,
@@ -40,6 +40,7 @@ export default function GridContainerSub(props: GridNodeProps) {
         onResizeMove(size) {
             // console.log(size, 'move');
             setSize(size)
+            onHandleResizeMove?.({ id, ...size})
         },
         onResizeEnd(size) {
             setSize(undefined)
