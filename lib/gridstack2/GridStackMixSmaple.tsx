@@ -42,9 +42,56 @@ export const TEST_LOW_SCHEMA: LowSchema = {
             id: rid(),
             componentName: 'text',
             componentProps: { value: 'text组件文本内容' },
-            type: 'grid-item', 
+            type: 'grid-item',
             x: 1, y: 1, w: 4, h: 2
             // rowStart: 1, rowEnd: 2, colStart: 1, colEnd: 4,
+        },
+        {
+            id: rid(),
+            // subgrid的componentName、componentProps属性无用
+            componentName: 'text',
+            componentProps: { value: 'text组件文本内容' },
+            type: 'subgrid',
+            col: 6, // col === w
+            x: 1, y: 3, w: 6, h: 2,
+            // rowStart: 1, rowEnd: 2, colStart: 1, colEnd: 4,
+            items: [
+                {
+                    id: rid(),
+                    componentName: 'text',
+                    componentProps: { value: 'text组件文本内容' },
+                    type: 'grid-item',
+                    x: 1, y: 1, w: 1, h: 2
+                    // rowStart: 1, rowEnd: 2, colStart: 1, colEnd: 4,
+                }
+            ]
+        },
+        {
+            id: rid(),
+            componentName: 'banner',
+            componentProps: {},
+            type: 'grid-item',
+            x: 1, y: 6, w: 8, h: 2,
+            // rowStart: 1, rowEnd: 2, colStart: 1, colEnd: 4,
+            items: [
+                {
+                    id: 'banner-root-1',
+                    componentName: 'page',
+                    componentProps: {},
+                    row: 5,
+                    col: 8, // 等于上级的w
+                    items: [
+                        {
+                            id: 'banner-root-1-item-text',
+                            componentName: 'text',
+                            componentProps: { value: 'text组件文本内容' },
+                            type: 'grid-item', 
+                            x: 0, y: 0, w: 4, h: 1
+                            // rowStart: 1, rowEnd: 2, colStart: 1, colEnd: 4,
+                        },
+                    ]
+                },
+            ],
         },
         // {
         //     id: rid(),
@@ -182,7 +229,7 @@ export function LowPageSub(props: any) {
 
 function LowBanner(props: any) {
     const { rawProps } = props
-    const { items } = rawProps
+    const { items = [] } = rawProps
     return <div
         className="w-full h-full"
         // onPointerDownCapture={(e) => {
@@ -216,9 +263,11 @@ function LowBanner(props: any) {
                 {/* <div onPointerDown={() => alert('click')}>dsgs</div> */}
                 <LowPageSub {...items[0]} />
             </SwiperSlide>
-            <SwiperSlide>
-                <LowPageSub {...items[1]} />
-            </SwiperSlide>
+            {items[1] && 
+                <SwiperSlide>
+                    <LowPageSub {...items[1]} />
+                </SwiperSlide>
+            }
             <SwiperSlide>slide 3</SwiperSlide>
             <SwiperSlide>slide 4</SwiperSlide>
         </Swiper>

@@ -5,6 +5,8 @@ type Props = {
     id: string // for useDraggable
     className?: string
     children?: any
+    w?: number,
+    h?: number
     [key: string]: any
 }
 
@@ -16,6 +18,7 @@ export default function (props: Props) {
     const { node, setNodeRef, listeners, attributes, } = useDraggable({
         id: `GridExternal-${id}`,
         data: {
+            w: 1, h: 1,
             ...otherProps,
         },
     })

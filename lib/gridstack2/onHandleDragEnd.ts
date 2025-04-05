@@ -16,7 +16,7 @@ type Params = {
 export default function onHandleDragEnd(params: Params) {
     const { activeId, overId, root, activeArea, overProps, activeProps, } = params
     const tree = new IndexTree(root, 'id', 'items')
-    console.log(params, tree);
+    // console.log(params, tree);
 
     const activeTreeNode = tree.get(activeId)
     if (!activeTreeNode) {

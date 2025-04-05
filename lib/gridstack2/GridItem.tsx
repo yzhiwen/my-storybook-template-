@@ -1,5 +1,5 @@
 import { DndContext, DragOverlay, useDraggable, useDroppable, type DragEndEvent, type DragMoveEvent, type DragStartEvent } from "@dnd-kit/core";
-import React, { useCallback, useContext, useEffect, useRef, useState } from "react";
+import React, { useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
 import useResizable from "../dnd/useResizable";
 import classNames from "classnames";
 import type { GridNodeProps, PositionParams } from "./type";
@@ -11,8 +11,7 @@ export default function GridItem(props: GridNodeProps) {
 
     const [size, setSize] = useState<{ width: number, height: number } | undefined>()
     const [isResizing, setIsResizing] = useState(false)
-    const [style_, setStyle_] = useState<React.CSSProperties>({})
-    const { onHandleResizeEnd, onGridItemRender } = useContext(GridStackPayloadContext)
+    const { rootGridTree, onHandleResizeEnd, onGridItemRender } = useContext(GridStackPayloadContext)
 
     const { node, isDragging, attributes, listeners, setNodeRef, transform } = useDraggable({
         id,
@@ -35,36 +34,43 @@ export default function GridItem(props: GridNodeProps) {
         },
     })
 
-    useEffect(() => {
+    const updateStyle_ = () => {
+        const pid = rootGridTree.get(id)!.parent!
+        const parentGridNode = rootGridTree.get(pid)!.node!
+        const parent = document.getElementById(pid)!
         const posParams: PositionParams = {
             margin: [0, 0],// 固定
             containerPadding: [0, 0],// 固定
-            containerWidth: node.current!.getBoundingClientRect().width, // 从父节点取
-            cols: 10, // 从父节点取
+            containerWidth: parent.getBoundingClientRect().width, // 从父节点取
+            cols: parentGridNode.col, // 从父节点取
             rowHeight: 40, // 固定
-            maxRows: Infinity, // 固定
+            maxRows: Infinity,
+            // maxRows: parentGridNode.type === 'subgrid' ? parentGridNode.h : Infinity, // 固定
         }
-        const state: any = {}
         const pos = calcGridItemPosition(
             posParams,
             props.x!,
             props.y!,
             props.w!,
             props.h!,
-            state,
+            {},
         );
-
+    
         const { left, top, width, height } = pos
-        const translate = `translate(${left}px,${top}px)`;
         const style: any = {
-            transform: translate,
+            // drag的是不能使用translate，会影响overlay
+            // transform: `translate(${left}px,${top}px)`,
+            left: `${left}px`,
+            top: `${top}px`,
             width: `${width}px`,
             height: `${height}px`,
             position: "absolute"
         }
-        setStyle_({ ...style })
-        console.log(props, pos, style);
-    }, [])
+        // console.log('grid item ', props, parentGridNode, parent.getBoundingClientRect().width, style);
+        return style
+    }
+    // 不放在useEffect，可能会造成GridItem的子级有两次width，但是子级只用第一次width去计算
+    const style_ = updateStyle_()
 
     return <div
         ref={setNodeRef}
@@ -101,6 +107,7 @@ export default function GridItem(props: GridNodeProps) {
             ...(style_),
             ...(size ? { width: `${size.width}px`, height: `${size.height}px` } : {}),
         }}>
+        {/* <div className="absolute bottom-0">{`props: ${props.x} ${props.y} ${props.w} ${props.h}`}</div> */}
         {onGridItemRender ? onGridItemRender?.(props) : props.children}
         <div
             className="resize-handle"

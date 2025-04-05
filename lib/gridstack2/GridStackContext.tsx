@@ -1,4 +1,4 @@
-import { DndContext, DragOverlay, type DragEndEvent, type DragMoveEvent, type DragStartEvent } from "@dnd-kit/core"
+import { DndContext, DragOverlay, pointerWithin, type DragEndEvent, type DragMoveEvent, type DragStartEvent } from "@dnd-kit/core"
 import React, { useContext, useEffect, useState } from "react"
 import type { GridNodeProps, PositionParams } from "./type"
 import calcGridItemMoveArea from "./calcGridItemMoveArea"
@@ -8,10 +8,11 @@ import calcGridItemArea from "./calcGridItemArea"
 import IndexTree from "./IndexTree"
 import domer from "./dom"
 import classNames from "classnames"
-import { calcGridItemPosition } from "./utils"
+import { calcGridItemPosition, calcXY } from "./utils"
 
 type GridStackPayload = {
     rootGridProps: GridNodeProps
+    rootGridTree: IndexTree
     setRootGridProps: React.Dispatch<React.SetStateAction<GridNodeProps>>
     onHandleResizeEnd?: (data: any) => void
     onGridItemRender?: (props: any) => React.ReactElement
@@ -34,14 +35,21 @@ export default function GridStackContext(props: Props) {
     const [rootGridProps, setRootGridProps] = useState<GridNodeProps>(defaultGridNodeProps)
     const [activeArea, setActiveArea] = useState<any>(null)
     const [activeStyle, setActiveStyle] = useState<any>(null)
+    const rootGridTree = new IndexTree(rootGridProps, 'id', 'items')
 
     return <GridStackPayloadContext.Provider value={{
         rootGridProps,
+        rootGridTree,
         setRootGridProps,
         onHandleResizeEnd,
         onGridItemRender
     }}>
-        <DndContext onDragStart={handleDragStart} onDragMove={handleDragMove} onDragEnd={handleDragEnd}>
+        <DndContext
+            collisionDetection={pointerWithin}
+            onDragStart={handleDragStart}
+            onDragMove={handleDragMove}
+            onDragEnd={handleDragEnd}
+        >
             <div className={classNames("w-full h-full relative", className)}
                 onPointerDownCapture={handleGridItemClick}
                 onMouseOver={handleGridItemHover}
@@ -60,9 +68,6 @@ export default function GridStackContext(props: Props) {
         const target = event.activatorEvent.target as HTMLElement
         setActiveStyle({
             ...activeStyle,
-            position: 'absolute', // 父节点是stackcontext
-            left: 100,
-            top: 200,
             width: target.getBoundingClientRect().width,
             height: target.getBoundingClientRect().height,
         })
@@ -74,50 +79,52 @@ export default function GridStackContext(props: Props) {
         const overId = event.over?.id?.toString()!
         const activeEle = document.getElementById(activeId)!
         const overEle = document.getElementById(overId)
+        console.log('on drag move', overId);
         if (!overEle) return
 
         const activeProps = event.active.data.current as any
+        const overProps = event.over!.data.current as any
         // const x = rect.x + deltaX, y: rect.y + deltaY,
 
         const posParams: PositionParams = {
             margin: [0, 0],// 固定
             containerPadding: [0, 0],// 固定
-            containerWidth: document.getElementById(overId)!.getBoundingClientRect().width, // 从父节点取
-            cols: 10, // 从父节点取
+            containerWidth: overEle.getBoundingClientRect().width, // 从父节点取
+            cols: overProps.col, // 从父节点取
             rowHeight: 40, // 固定
             maxRows: Infinity, // 固定
         }
+        // console.log('over', overProps.type, overProps.col, overEle.getBoundingClientRect().width);
+
+        // 计算在over中的top跟left
+        const left_ = activeEle.getBoundingClientRect().left - overEle.getBoundingClientRect().left + deltaX
+        const top_ = activeEle.getBoundingClientRect().top - overEle.getBoundingClientRect().top + deltaY
+
+        const { x: newX, y: newY } = calcXY(posParams, top_, left_, activeProps.w, activeProps.h)
+
         const pos = calcGridItemPosition(
             posParams,
-            activeProps.x!,
-            activeProps.y!,
+            newX!,
+            newY!,
             activeProps.w!,
             activeProps.h!,
-            // {
-            //     dragging: {
-            //         top: 100,
-            //         left: 200,
-            //     }
-            // },
         );
 
-        console.log('on move', pos);
+        // console.log('on move', pos.left, pos.top);
+
         setActiveStyle({
-            position: 'absolute', // 父节点是stackcontext
-            left: pos.left,
-            top: pos.top,
-            width: pos.width,
-            height: pos.height,
-            zIndex: 2000,
+            ...activeStyle,
+            // overlay展示预测的位置
+            x: pos.left + overEle.getBoundingClientRect().left,
+            y: pos.top + overEle.getBoundingClientRect().top,
         })
 
-        // setActiveStyle({
-        //     position: 'absolute',
-        //     top: activeEle.getBoundingClientRect().x,
-        //     left: activeEle.getBoundingClientRect().y,
-        //     width: activeEle.getBoundingClientRect().width,
-        //     height: activeEle.getBoundingClientRect().height,
-        // })
+        setActiveArea({
+            x: newX,
+            y: newY,
+            w: activeProps.w,
+            h: activeProps.h,
+        })
 
         // const params = {
         //     overId: event.over?.id?.toString(),
@@ -137,6 +144,9 @@ export default function GridStackContext(props: Props) {
         // console.log("on end", event)
         setActiveStyle(null);
         setActiveArea(null);
+
+        // console.log('on drag end', activeArea);
+
         const root_ = onHandleDragEnd({
             overId: event.over?.id.toString(),
             overProps: event.over?.data.current,
@@ -147,8 +157,8 @@ export default function GridStackContext(props: Props) {
 
             root: rootGridProps
         })
+        // console.log(root_);
         setRootGridProps(root_)
-        // onGridRootChange?.(root_)
     }
 
     function onHandleResizeEnd({ id: activeId }: any) {
