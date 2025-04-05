@@ -2,6 +2,7 @@ import React, { useCallback, useContext, useEffect, useRef, useState } from "rea
 import type { GridNodeProps, GridStackProps } from "./type";
 import GridContainer from "./GridContainer";
 import { GridStackPayloadContext } from "./GridStackContext";
+import { bottom } from "./utils";
 
 // TODO
 // subgrid 嵌套 subgrid
@@ -52,11 +53,30 @@ import { GridStackPayloadContext } from "./GridStackContext";
 // resize subgrid
 export default function (props: GridStackProps) {
     const { className, children, } = props
-    const { rootGridProps } = useContext(GridStackPayloadContext)
+    const { rootGridProps, activeArea } = useContext(GridStackPayloadContext)
+    const [h, setH] = useState<number>(0)
 
+    useEffect(() => {
+        const items = activeArea ? [...rootGridProps?.items ?? [], activeArea] : rootGridProps?.items
+        const maxY = bottom(items ?? [])
+        setH(maxY * 40) // 会出现gridstack高度抖动，setTimeout处理无用
+        
+        // const token = setTimeout(() => {
+        //     setH(maxY * 40)
+        // }, 100)
+        // return () => {
+        //     clearTimeout(token)
+        // }
+    }, [rootGridProps, activeArea])
+
+    console.log(h);
     return <GridContainer
         children={children}
         {...rootGridProps}
-        className={rootGridProps.className + ' ' + className + ' gridstack-root'}
+        className={rootGridProps.className + ' ' + className + ' gridstack-root '}
+        style={{
+            height: h,
+            ...rootGridProps.style,
+        }}
     />
 }

@@ -11,7 +11,7 @@ export default function GridItem(props: GridNodeProps) {
 
     const [size, setSize] = useState<{ width: number, height: number } | undefined>()
     const [isResizing, setIsResizing] = useState(false)
-    const { rootGridTree, onHandleResizeMove, onHandleResizeEnd, onGridItemRender } = useContext(GridStackPayloadContext)
+    const { rootGridTree, rootGridProps, onHandleResizeMove, onHandleResizeEnd, onGridItemRender } = useContext(GridStackPayloadContext)
 
     const { node, isDragging, attributes, listeners, setNodeRef, transform } = useDraggable({
         id,
@@ -36,7 +36,7 @@ export default function GridItem(props: GridNodeProps) {
     })
 
     const updateStyle_ = () => {
-        const pid = rootGridTree.get(id)!.parent!
+        const pid = rootGridTree.get(id)?.parent ?? rootGridProps.id
         const parentGridNode = rootGridTree.get(pid)!.node!
         const parent = document.getElementById(pid)!
         const posParams: PositionParams = {

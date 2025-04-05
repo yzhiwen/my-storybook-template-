@@ -161,9 +161,8 @@ export const TEST_LOW_SCHEMA: LowSchema = {
 export function LowCodeEditor(props: any) {
     const [rootGridProps, setRootGridProps] = useState<GridNodeProps>(TEST_LOW_SCHEMA)
 
-    return <div className="w-[80vw] h-[90vh]">
+    return <div className="w-[80vw] h-[90vh] overflow-auto">
         <GridStackContext
-            className="flex flex-col"
             defaultGridNodeProps={rootGridProps!}
             onGridItemRender={(props) => {
                 return <LowView {...props} />
@@ -179,7 +178,7 @@ export function LowCodeEditor(props: any) {
                     componentProps={{ value: '我是文本' }} />
                 <Setters />
             </div>
-            <GridStack className="!h-0 flex-1" />
+            <GridStack />
         </GridStackContext>
     </div>
 }

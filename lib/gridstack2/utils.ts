@@ -1,4 +1,4 @@
-import type { Position, PositionParams } from "./type";
+import type { GridNodeProps, Position, PositionParams } from "./type";
 
 // Helper for generating column width
 export function calcGridColWidth(positionParams: PositionParams): number {
@@ -162,4 +162,21 @@ export function clamp(
     upperBound: number
 ): number {
     return Math.max(Math.min(num, upperBound), lowerBound);
+}
+
+
+/**
+ * Return the bottom coordinate of the layout.
+ *
+ * @param  {Array} layout Layout array.
+ * @return {Number}       Bottom coordinate.
+ */
+export function bottom(layout: GridNodeProps[]): number {
+  let max = 0,
+    bottomY;
+  for (let i = 0, len = layout.length; i < len; i++) {
+    bottomY = layout[i]!.y! + layout[i]!.h!;
+    if (bottomY > max) max = bottomY;
+  }
+  return max;
 }

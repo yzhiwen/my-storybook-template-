@@ -35,7 +35,8 @@ export default function onHandleDragEnd(params: Params) {
     }
 
     const parentId = activeTreeNode.parent
-    if (parentId === overId) {
+    if (!overId || parentId === overId) {
+        // console.log('', activeProps, activeArea);
         // drag的父节点未变
         Object.assign(activeTreeNode.node, activeProps, activeArea)
         return { ...root }

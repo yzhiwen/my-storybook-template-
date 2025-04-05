@@ -14,6 +14,7 @@ import GridItemOutletOverlay from "./GridItemOutletOverlay"
 type GridStackPayload = {
     rootGridProps: GridNodeProps
     rootGridTree: IndexTree
+    activeArea: any
     setRootGridProps: React.Dispatch<React.SetStateAction<GridNodeProps>>
     onHandleResizeMove?: (data: any) => void
     onHandleResizeEnd?: (data: any) => void
@@ -42,6 +43,7 @@ export default function GridStackContext(props: Props) {
     return <GridStackPayloadContext.Provider value={{
         rootGridProps,
         rootGridTree,
+        activeArea,
         setRootGridProps,
         onHandleResizeMove,
         onHandleResizeEnd,
@@ -122,33 +124,22 @@ export default function GridStackContext(props: Props) {
             y: pos.top + overEle.getBoundingClientRect().top,
         })
 
-        setActiveArea({
+        const activeArea = {
             x: newX,
             y: newY,
             w: activeProps.w,
             h: activeProps.h,
-        })
+        }
+        setActiveArea(activeArea)
 
-        // const params = {
-        //     overId: event.over?.id?.toString(),
-        //     overProps: event.over?.data.current,
-        //     activeId: event.active.id.toString(),
-        //     deltaX,
-        //     deltaY,
-        // }
-        // const gridItemMoveAreaRes = calcGridItemMoveArea(params)
-        // if (gridItemMoveAreaRes) {
-        //     setActiveArea(gridItemMoveAreaRes.gridItemArea)
-        //     setActiveStyle(gridItemMoveAreaRes.overlayStyle)
-        // }
+        // 目前，还不能在这里直接更新activeProps，会导致下次的activeEle的位置变化（跟上次值不一样，导致计算结果错误）
+        // 所以高度问题，通过把activeArea提供出去给gridstack计算
+        // 以后的冲突处理问题，还得看看怎么处理
     }
 
     function handleDragEnd(event: DragEndEvent) {
-        // console.log("on end", event)
         setActiveStyle(null);
         setActiveArea(null);
-
-        // console.log('on drag end', activeArea);
 
         const root_ = onHandleDragEnd({
             overId: event.over?.id.toString(),
@@ -210,31 +201,6 @@ export default function GridStackContext(props: Props) {
 
     function onHandleResizeEnd({ id: activeId }: any) {
         setActiveStyle(null)
-        // const tree = new IndexTree(rootGridProps, 'id', 'items')
-        // const resizeItem = tree.get(activeId)
-        // const parentId = resizeItem?.parent
-        // const resizeParentItem = parentId ? tree.get(parentId) : undefined
-        // if (!parentId || !resizeParentItem) return
-        // const { row, col } = resizeParentItem?.node ?? {}
-
-        // const item = document.getElementById(activeId)!
-        // const c = document.getElementById(parentId)!
-        // const crect = c.getBoundingClientRect()
-        // const rect = item.getBoundingClientRect()
-        // const lastest = {
-        //     width: rect.width, height: rect.height,
-        //     x: rect.x, y: rect.y,
-        //     left: rect.left, top: rect.top,
-        //     right: rect.right, bottom: rect.bottom,
-        // }
-        // const activeArea = calcGridItemArea({
-        //     row, col,
-        //     x: crect.x, y: crect.y, width: crect.width, height: crect.height,
-        //     itemX: lastest.x, itemY: lastest.y, itemWidth: lastest.width, itemHeight: lastest.height
-        // })
-
-        // Object.assign(resizeItem.node, activeArea)
-        // setRootGridProps({ ...rootGridProps })
     }
 
     function handleGridItemClick(e: any) {
