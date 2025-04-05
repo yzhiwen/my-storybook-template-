@@ -69,7 +69,6 @@ export default function (props: GridStackProps) {
         // }
     }, [rootGridProps, activeArea])
 
-    console.log(h);
     return <GridContainer
         children={children}
         {...rootGridProps}

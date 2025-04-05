@@ -84,7 +84,6 @@ export default function GridStackContext(props: Props) {
         const overId = event.over?.id?.toString()!
         const activeEle = document.getElementById(activeId)!
         const overEle = document.getElementById(overId)
-        console.log('on drag move', overId);
         if (!overEle) return
 
         const activeProps = event.active.data.current as any
