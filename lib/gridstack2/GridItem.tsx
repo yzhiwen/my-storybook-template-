@@ -5,19 +5,41 @@ import classNames from "classnames";
 import type { GridNodeProps, PositionParams } from "./type";
 import { GridStackPayloadContext } from "./GridStackContext";
 import { calcGridItemPosition } from "./utils";
+import { autoPlacement, autoUpdate, detectOverflow, flip, FloatingOverlay, FloatingPortal, hide, shift, useFloating } from "@floating-ui/react";
 
 export default function GridItem(props: GridNodeProps) {
     const { id, className, rowStart, colStart, rowEnd, colEnd, } = props
 
     const [size, setSize] = useState<{ width: number, height: number } | undefined>()
     const [isResizing, setIsResizing] = useState(false)
-    const { rootGridTree, rootGridProps, onHandleResizeMove, onHandleResizeEnd, onGridItemRender } = useContext(GridStackPayloadContext)
+    const { rootGridTree, rootGridProps, clickId, onHandleResizeMove, onHandleResizeEnd, onGridItemRender } = useContext(GridStackPayloadContext)
 
     const { node, isDragging, attributes, listeners, setNodeRef, transform } = useDraggable({
         id,
         disabled: isResizing,
         data: { ...props }, // 在drag过程中无法修改
     });
+
+    const floatRef = useRef<HTMLDivElement>(null as any)
+    const [isOpen, setIsOpen] = useState(false);
+    useEffect(() => {
+        setIsOpen(clickId === id)
+    }, [clickId])
+
+    const { refs, floatingStyles } = useFloating({
+        placement: 'top-end',
+        open: isOpen,
+        onOpenChange: setIsOpen,
+        strategy: 'fixed',
+        middleware: [shift({ padding: 0, crossAxis: true, }), flip()],
+        elements: {
+            reference: node.current,
+            floating: floatRef.current,
+        },
+        whileElementsMounted: (reference, floating, update) => {
+            return autoUpdate(reference, floating, update, { animationFrame: false, })
+        }
+    })
 
     const { listeners: resizeListeners } = useResizable({
         resizeRef: node,
@@ -56,7 +78,7 @@ export default function GridItem(props: GridNodeProps) {
             props.h!,
             {},
         );
-    
+
         const { left, top, width, height } = pos
         const style: any = {
             // drag的是不能使用translate，会影响overlay
@@ -110,6 +132,7 @@ export default function GridItem(props: GridNodeProps) {
         }}>
         {/* <div className="absolute bottom-0">{`props: ${props.x} ${props.y} ${props.w} ${props.h}`}</div> */}
         {onGridItemRender ? onGridItemRender?.(props) : props.children}
+        <div ref={floatRef} style={{ ...floatingStyles, display: isOpen ? 'block' : 'none' }}>float</div>
         <div
             className="resize-handle"
             {...resizeListeners}

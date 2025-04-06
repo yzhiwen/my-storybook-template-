@@ -28,6 +28,7 @@ import { bottom } from "./utils";
 // 新增组件：基本组件：文本、图片、视频、按钮、swiper就够了
 // GridStack组件能力增强，router组件，弹框组件
 // griditem、gridsub能力增强：动画能力
+// 对外提供显示griditem的float-ui的接口
 
 // width跟height如何确定，col跟row如何确定？
 // grid、subgrid、grid-item的这几个都怎么确定？

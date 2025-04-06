@@ -19,6 +19,9 @@ type GridStackPayload = {
     onHandleResizeMove?: (data: any) => void
     onHandleResizeEnd?: (data: any) => void
     onGridItemRender?: (props: any) => React.ReactElement
+
+    hoverId?: string
+    clickId?: string
 }
 
 export const GridStackPayloadContext = React.createContext<GridStackPayload>({} as any)
@@ -40,10 +43,15 @@ export default function GridStackContext(props: Props) {
     const [activeStyle, setActiveStyle] = useState<any>(null)
     const rootGridTree = new IndexTree(rootGridProps, 'id', 'items')
 
+    const [hoverId, setHoverId] = useState<string>()
+    const [clickId, setClickId] = useState<string>()
+
     return <GridStackPayloadContext.Provider value={{
         rootGridProps,
         rootGridTree,
         activeArea,
+        hoverId,
+        clickId,
         setRootGridProps,
         onHandleResizeMove,
         onHandleResizeEnd,
@@ -206,6 +214,7 @@ export default function GridStackContext(props: Props) {
         if (lastestClick !== undefined) {
             lastestClick.style.border = '1px solid transparent'
             lastestClick.style.zIndex = `auto`
+            setClickId(undefined)
         }
         const t = domer
             .parents(e.target as any)
@@ -214,6 +223,7 @@ export default function GridStackContext(props: Props) {
             t.style.border = '1px solid black'
             t.style.zIndex = `2000`
             lastestClick = t
+            setClickId(t.id)
         }
     }
 
@@ -223,16 +233,19 @@ export default function GridStackContext(props: Props) {
             .find(item => item.className.includes('gridstack-item'))
         if (lastest !== undefined && lastest !== lastestClick) {
             lastest.style.border = '1px dashed transparent'
+            setHoverId(undefined)
         }
         if (t !== undefined && t !== lastestClick) {
             t.style.border = '1px dashed red'
             lastest = t
+            setHoverId(t.id)
         }
     }
 
     function handleGridItemHoverOut(e: any) {
         if (lastest !== undefined && lastest !== lastestClick) {
             lastest.style.border = '1px dashed transparent'
+            setHoverId(undefined)
         }
     }
 }
