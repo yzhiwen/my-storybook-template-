@@ -223,7 +223,7 @@ function LowImage(props: any) {
 
 export function LowPageSub(props: any) {
     // console.log(props, 'LowPageSub');
-    return <GridContainer {...props} />
+    return <GridContainer className="h-full" {...props} />
 }
 
 function LowBanner(props: any) {
