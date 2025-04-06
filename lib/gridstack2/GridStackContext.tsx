@@ -1,5 +1,5 @@
 import { DndContext, DragOverlay, pointerWithin, type DragEndEvent, type DragMoveEvent, type DragStartEvent } from "@dnd-kit/core"
-import React, { useContext, useEffect, useState } from "react"
+import React, { useContext, useEffect, useRef, useState } from "react"
 import type { GridNodeProps, PositionParams } from "./type"
 import calcGridItemMoveArea from "./calcGridItemMoveArea"
 import onHandleDragEnd from "./onHandleDragEnd"
@@ -10,6 +10,7 @@ import classNames from "classnames"
 import { calcGridItemPosition, calcWH, calcXY } from "./utils"
 import GridItemDragOverlay from "./GridItemDragOverlay"
 import GridItemOutletOverlay from "./GridItemOutletOverlay"
+import GridItemTooltipOverlay from "./GridItemTooltipOverlay"
 
 type GridStackPayload = {
     rootGridProps: GridNodeProps
@@ -72,7 +73,7 @@ export default function GridStackContext(props: Props) {
             </div>
             <GridItemDragOverlay id="grid-item-drag-overlay" style={activeStyle} />
             <GridItemOutletOverlay style={activeStyle} />
-            {/* {activeStyle ? <GridItemOverlay id="grid-resize-overlay" className="bg-blue-300" style={activeStyle} /> : null} */}
+            <GridItemTooltipOverlay />
         </DndContext>
     </GridStackPayloadContext.Provider>
 
