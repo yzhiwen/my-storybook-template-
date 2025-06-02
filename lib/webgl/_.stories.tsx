@@ -31,3 +31,9 @@ export const ViewCamera: Story = {
         type: 'camera'
     }
 };
+
+export const ViewTwglInit: Story = {
+    args: {
+        type: 'twgl-init'
+    }
+};
