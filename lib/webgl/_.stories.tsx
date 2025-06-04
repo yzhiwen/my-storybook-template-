@@ -37,3 +37,9 @@ export const ViewTwglInit: Story = {
         type: 'twgl-init'
     }
 };
+
+export const ViewTwglObjModel: Story = {
+    args: {
+        type: 'twgl-objmodel'
+    }
+};
