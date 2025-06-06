@@ -43,3 +43,9 @@ export const ViewTwglObjModel: Story = {
         type: 'twgl-objmodel'
     }
 };
+
+export const ViewTwglObjModelV2: Story = {
+    args: {
+        type: 'twgl-objmodel-v2'
+    }
+};
