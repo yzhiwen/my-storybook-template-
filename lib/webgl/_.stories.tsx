@@ -57,3 +57,14 @@ export const ViewTwglPlane: Story = {
     }
 };
 
+export const ViewTwglPoint: Story = {
+    args: {
+        type: 'twgl-point'
+    }
+};
+
+export const ViewTwglLine: Story = {
+    args: {
+        type: 'twgl-line'
+    }
+};
