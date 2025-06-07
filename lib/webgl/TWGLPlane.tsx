@@ -110,7 +110,20 @@ export default function () {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
+        gl.a1 = 2;
+        gl.b1 = 3;
+        gl.c1 = 1;
+        gl.d1 = 3;
+        gl.plane1.set(gl.a1, gl.b1, gl.c1, gl.d1);
         drawModel(gl);
+
+        // 绘制多个面
+        // gl.a1 = -2;
+        // gl.b1 = -3;
+        // gl.c1 = 1;
+        // gl.d1 = 3;
+        // gl.plane1.set(gl.a1, gl.b1, gl.c1, gl.d1);
+        // drawModel(gl);
     }
 
     const drawModel = (gl: WebGLRenderingContext | any) => {
