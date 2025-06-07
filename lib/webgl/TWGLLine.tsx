@@ -94,16 +94,39 @@ export default function () {
             matrixView: gl.camera.matrix.m,
             matrixProjection: gl.matrixProjection.m,
             materialDiffuse: [0.3, .5, .2, .6],
-            pointSize: 20.0,
+            pointSize: 5.0,
         };
         twgl.setUniforms(gl.programInfo, uniforms);
 
-        var vertices = [2,3,4, 10, 10, 10];
+        const scale = 5
+        const start = [2, 3, 4];
+        const end = [10, 10, 10];
+        const startPoint = new Vector3(...start);
+        const endPoint = new Vector3(...end);
+        var p1 = startPoint.clone().subtract(endPoint).clone().scale(-scale).add(startPoint);
+        var p2 = startPoint.clone().subtract(endPoint).clone().scale(scale).add(endPoint);
+        var vertices = [p1.x, p1.y, p1.z, p2.x, p2.y, p2.z];
         const bufferInfo_ = twgl.createBufferInfoFromArrays(gl, {
             vertexPosition: vertices,
         })
         twgl.setBuffersAndAttributes(gl, gl.programInfo, bufferInfo_);
         twgl.drawBufferInfo(gl, bufferInfo_, gl.LINES);
+
+        const uniforms_2 = {
+            matrixModel: matrixModel.m,
+            matrixView: gl.camera.matrix.m,
+            matrixProjection: gl.matrixProjection.m,
+            materialDiffuse: [0.1, .1, .2, .6],
+            pointSize: 5.0,
+        };
+        twgl.setUniforms(gl.programInfo, uniforms_2);
+
+        var vertices_2 = [...start, ...end];
+        const bufferInfo_2 = twgl.createBufferInfoFromArrays(gl, {
+            vertexPosition: vertices_2,
+        })
+        twgl.setBuffersAndAttributes(gl, gl.programInfo, bufferInfo_2);
+        twgl.drawBufferInfo(gl, bufferInfo_2, gl.POINTS);
     }
 
     const handleResize = (gl: WebGLRenderingContext | any) => {
