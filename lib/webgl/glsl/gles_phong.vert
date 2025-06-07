@@ -40,7 +40,7 @@ varying vec3 positionVec;               // vertex position in eye space
 varying vec3 normalVec;                 // normal vector in eye space
 //varying vec2 texCoord0;
 
-varying vec3 v_vertexPosition = vertexPosition;  // 强制保留
+// varying vec3 v_vertexPosition = vertexPosition;  // 强制保留
 
 void main(void)
 {

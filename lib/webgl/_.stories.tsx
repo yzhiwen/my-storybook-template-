@@ -49,3 +49,11 @@ export const ViewTwglObjModelV2: Story = {
         type: 'twgl-objmodel-v2'
     }
 };
+
+
+export const ViewTwglPlane: Story = {
+    args: {
+        type: 'twgl-plane'
+    }
+};
+

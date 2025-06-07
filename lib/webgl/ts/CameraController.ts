@@ -175,14 +175,14 @@ export class CameraController {
         e.preventDefault(); // disable context menu
     }
 
-    handleResize(gl: WebGLRenderingContext | any) {
+    handleResize() {
         // resize window to fit to parent
-        gl.this.canvas.width = gl.this.canvas.parentNode.clientWidth;
-        gl.this.canvas.height = gl.this.canvas.parentNode.clientHeight;
+        this.gl.canvas.width = (this.gl as any).canvas.parentNode.clientWidth;
+        this.gl.canvas.height = (this.gl as any).canvas.parentNode.clientHeight;
         //log(gl.this.canvas.parentNode.clientWidth + "x" + gl.this.canvas.parentNode.clientHeight);
 
-        gl.viewport(0, 0, gl.this.canvas.width, gl.this.canvas.height);
-        gl.matrixProjection = Matrix4.makePerspective(45, gl.this.canvas.width / gl.this.canvas.height, 0.1, 1000);
+        this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
+        (this.gl as any).matrixProjection = Matrix4.makePerspective(45, this.gl.canvas.width / this.gl.canvas.height, 0.1, 1000);
     }
 
 }
