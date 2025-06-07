@@ -16,6 +16,7 @@ import { Matrix4 } from "./js/Matrices.js"
 import { Plane } from "./js/Plane.js"
 import { Camera } from "./ts/Camera.js"
 import { CameraController } from "./ts/CameraController.js";
+import { Vertice } from "./ts/Vertice.js";
 
 export default function () {
     const ref = useRef<HTMLCanvasElement>(null!);
@@ -118,20 +119,21 @@ export default function () {
             matrixModel: matrixModel.m,
             matrixView: gl.camera.matrix.m,
             matrixProjection: gl.matrixProjection.m,
-            materialDiffuse: [0.3,.5,.2,.6]
+            materialDiffuse: [0.3, .5, .2, .6]
         };
         twgl.setUniforms(gl.programInfo, uniforms);
 
-        var s = 10;     // length
-        var planeVertices = new Float32Array([-s, -s, 0, s, -s, 0, s, s, 0, s, s, 0, -s, s, 0, -s, -s, 0]);
-        var planeNormals = new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1]);
-        const bufferInfo_ = twgl.createBufferInfoFromArrays(gl, {
-            vertexPosition: planeVertices,
-            // vertexNormal: planeNormals,
-        })
-        twgl.setBuffersAndAttributes(gl, gl.programInfo, bufferInfo_);
-        twgl.drawBufferInfo(gl, bufferInfo_);
+        // var s = 10;     // length
+        // var planeVertices = new Float32Array([-s, -s, 0, s, -s, 0, s, s, 0, s, s, 0, -s, s, 0, -s, -s, 0]);
+        // var planeNormals = new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1]);
+        // const bufferInfo_ = twgl.createBufferInfoFromArrays(gl, {
+        //     vertexPosition: planeVertices,
+        //     // vertexNormal: planeNormals,
+        // })
+        // twgl.setBuffersAndAttributes(gl, gl.programInfo, bufferInfo_);
+        // twgl.drawBufferInfo(gl, bufferInfo_);
 
+        // 画出grid plane
         // if (!gl.cubeBufferInfo) {
         //     gl.cubeBufferInfo = twgl.primitives.createPlaneBufferInfo(gl, 100, 100)
         //     gl.cubeBufferInfo.attribs.vertexPosition = gl.cubeBufferInfo.attribs.position
@@ -142,6 +144,16 @@ export default function () {
 
         // twgl.setBuffersAndAttributes(gl, gl.programInfo, gl.cubeBufferInfo);
         // twgl.drawBufferInfo(gl, gl.cubeBufferInfo);
+
+        // 画出grid plane的wireframe
+        const planeVertices = twgl.primitives.createPlaneVertices(100, 100, 10, 10);
+        const wireFrameIndices = Vertice.generateWireframeIndices(Array.from(planeVertices["indices"]!))
+        const bufferInfo_ = twgl.createBufferInfoFromArrays(gl, {
+            vertexPosition: planeVertices["position"]!,
+            indices: { numComponents: 2, data: wireFrameIndices, },
+        })
+        twgl.setBuffersAndAttributes(gl, gl.programInfo, bufferInfo_);
+        twgl.drawBufferInfo(gl, bufferInfo_, gl.LINES);
 
         gl.enable(gl.CULL_FACE);    // enable culling backface
     }
