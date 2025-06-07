@@ -16,6 +16,7 @@ import { Matrix4 } from "./js/Matrices.js"
 import { ObjModel } from "./js/ObjModel.js"
 import { Camera } from "./ts/Camera.js"
 import { CameraController } from "./ts/CameraController.js";
+import { Vertice } from "./ts/Vertice.js";
 
 export default function () {
     const ref = useRef<HTMLCanvasElement>(null!);
@@ -44,6 +45,12 @@ export default function () {
             gl.objModelBufferInfo = twgl.createBufferInfoFromArrays(gl, {
                 vertexPosition: obj.vertices,
                 indices: obj.indices,
+                vertexNormal: obj.normals,
+            })
+
+            gl.objModelWireframeBufferInfo = twgl.createBufferInfoFromArrays(gl, {
+                vertexPosition: obj.vertices,
+                indices: { numComponents: 2, data: Vertice.generateWireframeIndices(obj.indices)},
                 vertexNormal: obj.normals,
             })
 
@@ -154,7 +161,11 @@ export default function () {
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, null); // disable texture
 
-        if (gl.objModelBufferInfo) {
+        if (gl.objModelWireframeBufferInfo) {
+            twgl.setBuffersAndAttributes(gl, gl.programInfo, gl.objModelWireframeBufferInfo);
+            twgl.drawBufferInfo(gl, gl.objModelWireframeBufferInfo, gl.LINES)
+        }
+        else if (gl.objModelBufferInfo) {
             twgl.setBuffersAndAttributes(gl, gl.programInfo, gl.objModelBufferInfo);
             twgl.drawBufferInfo(gl, gl.objModelBufferInfo)
         }
