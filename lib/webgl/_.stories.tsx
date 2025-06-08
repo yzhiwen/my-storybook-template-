@@ -68,3 +68,9 @@ export const ViewTwglLine: Story = {
         type: 'twgl-line'
     }
 };
+
+export const ViewTwgCyliner: Story = {
+    args: {
+        type: 'twgl-cyliner'
+    }
+};

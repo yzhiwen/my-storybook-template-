@@ -1,3 +1,4 @@
+import TWGLCyliner from "./TWGLCyliner"
 import TWGLInit from "./TWGLInit"
 import TWGLLine from "./TWGLLine"
 import TWGLObjModel from "./TWGLObjModel"
@@ -18,7 +19,8 @@ type Props = {
         'twgl-objmodel-v2' |
         'twgl-plane' |
         'twgl-point' | 
-        'twgl-line' 
+        'twgl-line' |
+        'twgl-cyliner'
 }
 export default function (props: Props) {
     switch (props.type) {
@@ -31,6 +33,7 @@ export default function (props: Props) {
         case 'twgl-plane': return <TWGLPlane key="twgl-plane" />
         case 'twgl-point': return <TWGLPoint key="twgl-point" />
         case 'twgl-line': return <TWGLLine key="twgl-line" />
+        case 'twgl-cyliner': return <TWGLCyliner key="twgl-cyliner" />
     }
     return <div>view</div>
 }
