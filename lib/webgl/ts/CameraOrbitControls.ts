@@ -1,35 +1,28 @@
-
-// @ts-ignore
-import { Vector2, Vector3, Vector4 } from '../js/Vectors'
-
-// @ts-ignore
-import { Matrix4 } from '../js/Matrices'
-
-// @ts-ignore
-import { Quaternion } from '../js/Quaternion'
-
 import * as Three from 'three'
 
 export class Camera {
-    position = new Vector3(0, 0, 100);
-    target = new Vector3(0, 0, 0);
-    up = new Vector3(0, 1, 0); // 不是 (0,0,0) - (0,1,0)
+    position = new Three.Vector3(0, 0, 100);
+    target = new Three.Vector3(0, 0, 0);
+    up = new Three.Vector3(0, 1, 0); // 不是 (0,0,0) - (0,1,0)
 
     get zAxis() { // camera dir
-        return this.position.clone().subtract(this.target).normalize()
+        return this.position.clone().sub(this.target).normalize()
     }
 
     get xAxis() { // camera right
-        return Vector3.cross(this.up, this.zAxis).normalize();
+        return new Three.Vector3().crossVectors(this.up, this.zAxis).normalize();
     }
 
     get yAxis() { // camera up
-        return Vector3.cross(this.zAxis, this.xAxis).normalize();
+        return new Three.Vector3().crossVectors(this.zAxis, this.xAxis).normalize();
+    }
+
+    get viewMatrix222() {
+        return new Three.Matrix4().lookAt(this.position, this.target, this.up);
     }
 
     get viewMatrix() {
         const { xAxis, yAxis, zAxis } = this;
-        // console.log(this)
         const tx = -xAxis.clone().dot(this.position);
         const ty = -yAxis.clone().dot(this.position);
         const tz = -zAxis.clone().dot(this.position);
@@ -46,7 +39,18 @@ export class Camera {
         m[2] = zAxis.x; m[6] = zAxis.y; m[10] = zAxis.z; m[14] = tz;
         m[3] = 0; m[7] = 0; m[11] = 0; m[15] = 1;
 
-        const mat4 = new Matrix4(...m);
+        const mat4 = new Three.Matrix4(
+            // m[0], m[1], m[2], m[3],
+            // m[4], m[5], m[6], m[7],
+            // m[8], m[9], m[10], m[11],
+            // m[12], m[13], m[14], m[15]
+
+            m[0], m[4], m[8], m[12],
+            m[1], m[5], m[9], m[13],
+            m[2], m[6], m[10], m[14],
+            m[3], m[7], m[11], m[15]
+        );
+
         return mat4
     }
 }
@@ -71,7 +75,7 @@ export class OrthographicCamera extends Camera {
     }
 
     get projectionMatrix() {
-        return Matrix4.makeOrthographic(this.left, this.right, this.bottom, this.top, this.near, this.far);
+        return new Three.Matrix4().makeOrthographic(this.left, this.right, this.bottom, this.top, this.near, this.far)
     }
 }
 
@@ -91,7 +95,31 @@ export class PerspectiveCamera extends Camera {
     }
 
     get projectionMatrix() {
-        return Matrix4.makePerspective(this.fov, this.aspect, this.near, this.far);
+        let tangent = Math.tan(this.fov / 2 * Math.PI / 180);
+        let height = this.near * tangent;
+        let width = height * this.aspect;
+
+        // 跟Threejs的PerspectiveCamera计算方式不太一样
+        return new Three.Matrix4().makePerspective(-width, width, height, -height, this.near, this.far);
+    
+        const l = -width;
+        const r = width;
+        const t = height;
+        const b = -height;
+        const n = this.near;
+        const f = this.far;
+        let m = new Three.Matrix4().identity();
+        m.elements[0] = 2 * n / (r - l);
+        m.elements[5] = 2 * n / (t - b);
+        m.elements[8] = (r + l) / (r - l);
+        m.elements[9] = (t + b) / (t - b);
+        m.elements[10] = -(f + n) / (f - n);
+        m.elements[11] = -1;
+        m.elements[14] = -(2 * f * n) / (f - n);
+        m.elements[15] = 0;
+        
+        return m;
+
     }
 }
 
@@ -114,7 +142,7 @@ class Spherical {
         const x = sinPhiRadius * Math.sin(theta);
         const y = Math.cos(phi) * radius;
         const z = sinPhiRadius * Math.cos(theta);
-        return new Vector3(x, y, z);
+        return new Three.Vector3(x, y, z);
     }
 
     setFromCartesianCoords(x: number, y: number, z: number) {
@@ -147,16 +175,16 @@ export class CameraOrbitConrols {
 
     state: "none" | "pan" | "dolly" | "rotate"
 
-    panStart: Vector2 = new Vector2();
-    panEnd: Vector2 = new Vector2();
-    panOffset: Vector3 = new Vector3();
+    panStart: Three.Vector2 = new Three.Vector2();
+    panEnd: Three.Vector2 = new Three.Vector2();
+    panOffset: Three.Vector3 = new Three.Vector3();
 
     zoom = 1; // 缩放因子
     zoomScale = 0.90; // 滚轮每次滚动的缩放系数
 
     spherical = new Spherical();
-    quaternion = new Quaternion(1, 0, 0, 0);
-    rotateOffset: Vector3 = new Vector3()
+    quaternion = new Three.Quaternion();
+    rotateOffset: Three.Vector3 = new Three.Vector3()
 
 
 
@@ -192,19 +220,19 @@ export class CameraOrbitConrols {
             switch (this.state) {
                 case 'pan':
                     this.panEnd.set(ev.clientX, ev.clientY);
-                    const panDelta = this.panEnd.clone().subtract(this.panStart);
+                    const panDelta = this.panEnd.clone().sub(this.panStart);
                     this.pan({ deltaX: panDelta.x, deltaY: panDelta.y });
                     this.update();
-                    this.panStart.set(this.panEnd);
+                    this.panStart.copy(this.panEnd);
                     break;
                 case 'rotate':
                     this.panEnd.set(ev.clientX, ev.clientY);
-                    const rotateDelta = this.panEnd.clone().subtract(this.panStart);
+                    const rotateDelta = this.panEnd.clone().sub(this.panStart);
                     this.rotate({ deltaX: rotateDelta.x, deltaY: rotateDelta.y });
                     // this.rotateByQuat({ deltaX: rotateDelta.x, deltaY: rotateDelta.y });
                     // this.rotateByQuat2({ deltaX: rotateDelta.x, deltaY: rotateDelta.y });
                     this.update();
-                    this.panStart.set(this.panEnd);
+                    this.panStart.copy(this.panEnd);
                     break;
             }
         });
@@ -235,7 +263,7 @@ export class CameraOrbitConrols {
         const { clientWidth: canvasWidth, clientHeight: canvasHeight } = this.canvas
 
         // 相机视点到目标点的距离
-        const length = position.clone().subtract(target).length();
+        const length = position.clone().sub(target).length();
         // 视椎体垂直夹角的一半(弧度)
         const halfFov = fov * Math.PI / 360;
         // 目标平面的高度
@@ -246,7 +274,8 @@ export class CameraOrbitConrols {
         const panX = -deltaX * ratio;
         const panY = deltaY * ratio;
 
-        this.panOffset = new Vector3().add(xAxis.clone().scale(panX)).add(yAxis.clone().scale(panY));
+        this.panOffset = new Three.Vector3().add(xAxis.clone().multiplyScalar(panX)).add(yAxis.clone().multiplyScalar(panY));
+        console.log('this.panOffset', this.panOffset)
     }
 
     panOrthographicCamera(options: any) {
@@ -269,7 +298,7 @@ export class CameraOrbitConrols {
 
         // 合成平移向量（基向量计算同透视投影）
         // const panVector = panX * xAxis + panY * yAxis;
-        this.panOffset = new Vector3().add(xAxis.clone().scale(panX)).add(yAxis.clone().scale(panY));
+        this.panOffset = new Three.Vector3().add(xAxis.clone().multiplyScalar(panX)).add(yAxis.clone().multiplyScalar(panY));
 
         // 移动摄像机+目标点。（放到update处理）
         // this.camera.position += panVector;
@@ -307,6 +336,7 @@ export class CameraOrbitConrols {
     dollyPerspectiveProjection() {
         const perspectiveCamera = this.camera as PerspectiveCamera
         const { position: cameraPosition, fov } = this.cameraClone as PerspectiveCamera
+
         // 方案1：改变视野角度（FOV）
         // perspectiveCamera.fov = fov / this.zoom;  // 缩放FOV
 
@@ -319,7 +349,7 @@ export class CameraOrbitConrols {
 
         const { position, target } = this.camera;
 
-        const r = position.clone().subtract(target);
+        const r = position.clone().sub(target);
         this.spherical.setFromCartesianCoords(r.x, r.y, r.z)
 
         const sensitivity = 0.01; // 角度变化灵敏度因子
@@ -333,8 +363,8 @@ export class CameraOrbitConrols {
         console.log('phi theta', this.spherical.phi, this.spherical.theta)
         console.log('rotateOffset', this.rotateOffset)
 
-        this.camera.position.set(this.rotateOffset);
-        this.camera.position.set(this.camera.target.clone().add(this.rotateOffset));
+        this.camera.position.copy(this.rotateOffset);
+        this.camera.position.copy(this.camera.target.clone().add(this.rotateOffset));
         this.rotateOffset.set(0, 0, 0);
     }
 
@@ -347,11 +377,11 @@ export class CameraOrbitConrols {
         const pitch = - Math.PI * deltaY * sensitivity / this.canvas.clientHeight;  // 俯仰角（绕X轴）
         const yaw = - Math.PI * deltaX * sensitivity / this.canvas.clientHeight; // 偏航角（绕Y轴）
 
-        const pitchQuat = new Quaternion();
-        const yawQuat = new Quaternion();
+        const pitchQuat = new Three.Quaternion();
+        const yawQuat = new Three.Quaternion();
 
-        pitchQuat.setWithAxisAngle(new Vector3(1, 0, 0), pitch);
-        yawQuat.setWithAxisAngle(new Vector3(0, 1, 0), yaw);
+        pitchQuat.setFromAxisAngle(new Three.Vector3(1, 0, 0), pitch);
+        yawQuat.setFromAxisAngle(new Three.Vector3(0, 1, 0), yaw);
 
         // 组合旋转（顺序很重要！）
         // 先偏航后俯仰：currentQuat = pitchQuat * (yawQuat * currentQuat)
@@ -378,7 +408,7 @@ export class CameraOrbitConrols {
         const up = new Three.Vector3(this.camera.up.x, this.camera.up.y, this.camera.up.z);
 
         const _v = new Three.Vector3();
-        const _quat = new Three.Quaternion().setFromUnitVectors(up, new Vector3(0, 1, 0));
+        const _quat = new Three.Quaternion().setFromUnitVectors(up, new Three.Vector3(0, 1, 0));
         const _quatInverse = _quat.clone().invert();
         const _spherical = new Three.Spherical();
         const _sphericalDelta = new Three.Spherical();

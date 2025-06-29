@@ -9,13 +9,11 @@ import { Light } from "./js/Light.js"
 // @ts-ignore
 import { Material } from "./js/Material.js"
 // @ts-ignore
-import { Vector3 } from './js/Vectors.js'
-// @ts-ignore
-import { Matrix4 } from "./js/Matrices.js"
-// @ts-ignore
 import { ObjModel } from "./js/ObjModel.js"
 import { Vertice } from "./ts/Vertice.js";
 import { CameraOrbitConrols, OrthographicCamera, PerspectiveCamera } from "./ts/CameraOrbitControls.js";
+
+import * as Three from 'three';
 
 export default function () {
     const ref = useRef<HTMLCanvasElement>(null!);
@@ -85,7 +83,7 @@ export default function () {
         // init camera
         // gl.canvas.width, gl.canvas.height
         const { clientWidth: canvasWidth, clientHeight: canvasHeight } = gl.canvas
-        gl.camera = new PerspectiveCamera(60, canvasWidth / canvasHeight, 1, 2000)
+        gl.camera = new PerspectiveCamera(60, canvasWidth / canvasHeight, 0.1, 2000)
         // gl.camera = new OrthographicCamera(-100, 100, 100, -100, 0.1, 2000);
         gl.camera.position.set(0,0,100);
         gl.cameraController = new CameraOrbitConrols({ camera: gl.camera, canvas: gl.canvas });
@@ -121,21 +119,16 @@ export default function () {
         // set view transform 没有gl.program.uniformLocations.matrixView
         const viewMatrix = gl.camera.viewMatrix;
         // const viewMatrix = gl.camera.viewMatrix.clone().multiply(gl.cameraController.quaternion.toMatrix());
-        gl.uniformMatrix4fv(gl.programInfo.uniformLocations.matrixView, false, viewMatrix.m);
+        gl.uniformMatrix4fv(gl.programInfo.uniformLocations.matrixView, false, viewMatrix.elements);
 
         // set modelview matrix
-        const matrixModel = new Matrix4();
+        const matrixModel = new Three.Matrix4();
         const modelViewMatrix = viewMatrix.clone().multiply(matrixModel);
-        gl.uniformMatrix4fv(gl.programInfo.uniformLocations.matrixModelView, false, modelViewMatrix.m);
-
-        // compute normal transform
-        const normalMatrix = modelViewMatrix.clone();
-        normalMatrix.setTranslation(0, 0, 0); // remove tranlsation part
-        gl.uniformMatrix4fv(gl.programInfo.uniformLocations.matrixNormal, false, normalMatrix.m);
+        gl.uniformMatrix4fv(gl.programInfo.uniformLocations.matrixModelView, false, modelViewMatrix.elements);
 
         // compute projection matrix
         gl.matrixModelViewProjection = gl.camera.projectionMatrix.clone().multiply(modelViewMatrix);
-        gl.uniformMatrix4fv(gl.programInfo.uniformLocations.matrixModelViewProjection, false, gl.matrixModelViewProjection.m);
+        gl.uniformMatrix4fv(gl.programInfo.uniformLocations.matrixModelViewProjection, false, gl.matrixModelViewProjection.elements);
 
         // bind texture
         gl.activeTexture(gl.TEXTURE0);
