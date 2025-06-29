@@ -14,9 +14,8 @@ import { Vector3 } from './js/Vectors.js'
 import { Matrix4 } from "./js/Matrices.js"
 // @ts-ignore
 import { ObjModel } from "./js/ObjModel.js"
-import { Camera } from "./ts/Camera.js"
-import { CameraController } from "./ts/CameraController.js";
 import { Vertice } from "./ts/Vertice.js";
+import { CameraOrbitConrols, OrthographicCamera, PerspectiveCamera } from "./ts/CameraOrbitControls.js";
 
 export default function () {
     const ref = useRef<HTMLCanvasElement>(null!);
@@ -53,13 +52,6 @@ export default function () {
                 indices: { numComponents: 2, data: Vertice.generateWireframeIndices(obj.indices)},
                 vertexNormal: obj.normals,
             })
-
-            // configure camera
-            gl.camera.distance = 35.146700896824605 * 5;
-            gl.camera.target.set(-0.0012578964233398438, -0.000732421875, -0.0012111663818359375);
-            gl.camera.update();
-
-            // startRendering(gl);
         })
     }
 
@@ -91,27 +83,13 @@ export default function () {
         gl.material.shininess = 128;
 
         // init camera
-        var CAMERA_DIST = 15;
-        gl.camera = new Camera();
-        gl.camera.distance = CAMERA_DIST;
-        gl.camera.setMoveAcceleration(150);
-        gl.camera.setMoveSpeed(80);
-        gl.camera.setZoomAcceleration(150);
-        gl.camera.setZoomSpeed(100);
-
-        gl.cameraController = new CameraController(gl.camera, gl);
-
-        // gl.camera.distance = 35.146700896824605 * 2;
-        // gl.camera.target.set(-0.0012578964233398438, -0.000732421875, -0.0012111663818359375);
-        // gl.camera.update();
-
-        // init matrices
-        gl.matrixModel = new Matrix4();
-        gl.matrixView = new Matrix4();
-        gl.matrixProjection = new Matrix4();
-        gl.matrixModelView = gl.matrixView.clone().multiply(gl.matrixModel);
-        gl.matrixNormal = gl.matrixModelView.getRotationMatrix();
-
+        // gl.canvas.width, gl.canvas.height
+        const { clientWidth: canvasWidth, clientHeight: canvasHeight } = gl.canvas
+        gl.camera = new PerspectiveCamera(60, canvasWidth / canvasHeight, 1, 2000)
+        // gl.camera = new OrthographicCamera(-100, 100, 100, -100, 0.1, 2000);
+        gl.camera.position.set(0,0,100);
+        gl.cameraController = new CameraOrbitConrols({ camera: gl.camera, canvas: gl.canvas });
+        
         // setup uniforms
         gl.uniform4fv(gl.programInfo.uniformLocations.lightPosition, gl.light.getPosition());
         gl.uniform4fv(gl.programInfo.uniformLocations.lightColor, gl.light.getColor());
@@ -141,20 +119,22 @@ export default function () {
     const drawModel = (gl: WebGLRenderingContext | any) => {
 
         // set view transform 没有gl.program.uniformLocations.matrixView
-        gl.matrixView = gl.camera.matrix;
-        gl.uniformMatrix4fv(gl.programInfo.uniformLocations.matrixView, false, gl.matrixView.m);
+        const viewMatrix = gl.camera.viewMatrix;
+        // const viewMatrix = gl.camera.viewMatrix.clone().multiply(gl.cameraController.quaternion.toMatrix());
+        gl.uniformMatrix4fv(gl.programInfo.uniformLocations.matrixView, false, viewMatrix.m);
 
         // set modelview matrix
-        gl.matrixModelView = gl.matrixView.clone().multiply(gl.matrixModel);
-        gl.uniformMatrix4fv(gl.programInfo.uniformLocations.matrixModelView, false, gl.matrixModelView.m);
+        const matrixModel = new Matrix4();
+        const modelViewMatrix = viewMatrix.clone().multiply(matrixModel);
+        gl.uniformMatrix4fv(gl.programInfo.uniformLocations.matrixModelView, false, modelViewMatrix.m);
 
         // compute normal transform
-        gl.matrixNormal = gl.matrixModelView.clone();
-        gl.matrixNormal.setTranslation(0, 0, 0); // remove tranlsation part
-        gl.uniformMatrix4fv(gl.programInfo.uniformLocations.matrixNormal, false, gl.matrixNormal.m);
+        const normalMatrix = modelViewMatrix.clone();
+        normalMatrix.setTranslation(0, 0, 0); // remove tranlsation part
+        gl.uniformMatrix4fv(gl.programInfo.uniformLocations.matrixNormal, false, normalMatrix.m);
 
         // compute projection matrix
-        gl.matrixModelViewProjection = gl.matrixProjection.clone().multiply(gl.matrixModelView);
+        gl.matrixModelViewProjection = gl.camera.projectionMatrix.clone().multiply(modelViewMatrix);
         gl.uniformMatrix4fv(gl.programInfo.uniformLocations.matrixModelViewProjection, false, gl.matrixModelViewProjection.m);
 
         // bind texture
@@ -178,10 +158,10 @@ export default function () {
         //log(gl.canvas.parentNode.clientWidth + "x" + gl.canvas.parentNode.clientHeight);
 
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-        gl.matrixProjection = Matrix4.makePerspective(45, gl.canvas.width / gl.canvas.height, 0.1, 1000);
+        // gl.matrixProjection = Matrix4.makePerspective(45, gl.canvas.width / gl.canvas.height, 0.1, 1000);
     }
 
-    return <div className="w-[100vw] h-[100vh]">
-        <canvas ref={ref} width="200" height="200" />
+    return <div className="w-[100%] h-[100%]">
+        <canvas ref={ref} className="w-full h-full"/>
     </div>
 }
