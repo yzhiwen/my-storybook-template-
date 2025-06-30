@@ -1,13 +1,9 @@
 import { useRef, useEffect } from "react";
 import * as twgl from "twgl.js"
 
-import vs from './glsl/gles_phongColorTex.vert?raw'
-import fs from './glsl/gles_phongColorTex.frag?raw'
+import vs from './glsl/gles_phongColorTexV2.vert?raw'
+import fs from './glsl/gles_phongColorTexV2.frag?raw'
 
-// @ts-ignore
-import { Light } from "./js/Light.js"
-// @ts-ignore
-import { Material } from "./js/Material.js"
 // @ts-ignore
 import { ObjModel } from "./js/ObjModel.js"
 import { Vertice } from "./ts/Vertice.js";
@@ -68,18 +64,6 @@ export default function () {
         gl.program = programInfo.program;
         gl.useProgram(gl.program);
 
-        // default light
-        gl.light = new Light(0, 0, 1, 0);
-        //gl.light.position.normalize();
-        gl.light.color.set(1.0, 1.0, 1.0, 1.0);        // light color
-        gl.light.attenuations.set(1, 0.05, 0); // attenuations (constant, linear, quad)
-
-        // default material
-        gl.material = new Material(0.8, 0.8, 0.8, 1.0);    // with default diffuse
-        gl.material.ambient.set(0.2, 0.2, 0.2, 1);
-        gl.material.specular.set(1, 1, 1, 1);
-        gl.material.shininess = 128;
-
         // init camera
         // gl.canvas.width, gl.canvas.height
         const { clientWidth: canvasWidth, clientHeight: canvasHeight } = gl.canvas
@@ -87,15 +71,6 @@ export default function () {
         // gl.camera = new OrthographicCamera(-100, 100, 100, -100, 0.1, 2000);
         gl.camera.position.set(0,0,100);
         gl.cameraController = new CameraOrbitConrols({ camera: gl.camera, canvas: gl.canvas });
-        
-        // setup uniforms
-        gl.uniform4fv(gl.programInfo.uniformLocations.lightPosition, gl.light.getPosition());
-        gl.uniform4fv(gl.programInfo.uniformLocations.lightColor, gl.light.getColor());
-        gl.uniform3fv(gl.programInfo.uniformLocations.lightAttenuation, gl.light.getAttenuations());
-        gl.uniform4fv(gl.programInfo.uniformLocations.materialAmbient, gl.material.getAmbient());
-        gl.uniform4fv(gl.programInfo.uniformLocations.materialDiffuse, gl.material.getDiffuse());
-        gl.uniform4fv(gl.programInfo.uniformLocations.materialSpecular, gl.material.getSpecular());
-        gl.uniform1f(gl.programInfo.uniformLocations.materialShininess, gl.material.shininess);
     }
 
     const startRendering = (gl: WebGLRenderingContext | any) => {
@@ -121,18 +96,12 @@ export default function () {
         // const viewMatrix = gl.camera.viewMatrix.clone().multiply(gl.cameraController.quaternion.toMatrix());
         gl.uniformMatrix4fv(gl.programInfo.uniformLocations.matrixView, false, viewMatrix.elements);
 
-        // set modelview matrix
         const matrixModel = new Three.Matrix4();
         const modelViewMatrix = viewMatrix.clone().multiply(matrixModel);
         gl.uniformMatrix4fv(gl.programInfo.uniformLocations.matrixModelView, false, modelViewMatrix.elements);
 
-        // compute projection matrix
         gl.matrixModelViewProjection = gl.camera.projectionMatrix.clone().multiply(modelViewMatrix);
         gl.uniformMatrix4fv(gl.programInfo.uniformLocations.matrixModelViewProjection, false, gl.matrixModelViewProjection.elements);
-
-        // bind texture
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, null); // disable texture
 
         if (gl.objModelWireframeBufferInfo) {
             twgl.setBuffersAndAttributes(gl, gl.programInfo, gl.objModelWireframeBufferInfo);
@@ -148,7 +117,6 @@ export default function () {
         // resize window to fit to parent
         gl.canvas.width = gl.canvas.parentNode.clientWidth;
         gl.canvas.height = gl.canvas.parentNode.clientHeight;
-        //log(gl.canvas.parentNode.clientWidth + "x" + gl.canvas.parentNode.clientHeight);
 
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         // gl.matrixProjection = Matrix4.makePerspective(45, gl.canvas.width / gl.canvas.height, 0.1, 1000);
