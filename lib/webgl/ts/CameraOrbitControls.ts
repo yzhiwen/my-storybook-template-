@@ -194,6 +194,7 @@ export class CameraOrbitConrols {
         camera: Camera,
         canvas: HTMLCanvasElement
         disableResizeHandle?: boolean
+        disableOrbitControls?: boolean
     }) {
         this.gl = options.gl;
         this.camera = options.camera;
@@ -209,7 +210,9 @@ export class CameraOrbitConrols {
         );
         this.canvas = options.canvas
         this.state = "none"
-        this.init();
+        if (!options.disableOrbitControls) {
+            this.init();
+        }
         if (!options.disableResizeHandle) {
             this.initResize();
         }
