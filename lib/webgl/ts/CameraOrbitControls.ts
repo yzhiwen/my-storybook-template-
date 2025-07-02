@@ -101,7 +101,7 @@ export class PerspectiveCamera extends Camera {
 
         // 跟Threejs的PerspectiveCamera计算方式不太一样
         return new Three.Matrix4().makePerspective(-width, width, height, -height, this.near, this.far);
-    
+
         const l = -width;
         const r = width;
         const t = height;
@@ -117,7 +117,7 @@ export class PerspectiveCamera extends Camera {
         m.elements[11] = -1;
         m.elements[14] = -(2 * f * n) / (f - n);
         m.elements[15] = 0;
-        
+
         return m;
 
     }
@@ -169,6 +169,7 @@ class Spherical {
 }
 
 export class CameraOrbitConrols {
+    gl: WebGLRenderingContext
     camera: Camera
     cameraClone: Camera
     canvas: HTMLCanvasElement
@@ -188,7 +189,13 @@ export class CameraOrbitConrols {
 
 
 
-    constructor(options: { camera: Camera, canvas: HTMLCanvasElement }) {
+    constructor(options: {
+        gl: WebGLRenderingContext,
+        camera: Camera,
+        canvas: HTMLCanvasElement
+        disableResizeHandle?: boolean
+    }) {
+        this.gl = options.gl;
         this.camera = options.camera;
         // https://gist.github.com/GeorgeGkas/36f7a7f9a9641c2115a11d58233ebed2
         this.cameraClone = Object.assign(
@@ -203,6 +210,9 @@ export class CameraOrbitConrols {
         this.canvas = options.canvas
         this.state = "none"
         this.init();
+        if (!options.disableResizeHandle) {
+            this.initResize();
+        }
     }
 
     init() {
@@ -247,6 +257,22 @@ export class CameraOrbitConrols {
             this.state = 'none'
         })
     }
+
+    initResize() {
+        const onResize = () => {
+            this.gl.canvas.width = this.canvas.clientWidth;
+            this.gl.canvas.height = this.canvas.clientHeight;
+            this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
+
+            if (this.camera instanceof PerspectiveCamera) {
+                this.camera.aspect = this.gl.canvas.width / this.gl.canvas.height;
+            }
+        }
+
+        onResize()
+        window.addEventListener("resize", onResize)
+    }
+
 
     pan(options: any) {
         if (this.camera instanceof OrthographicCamera) {

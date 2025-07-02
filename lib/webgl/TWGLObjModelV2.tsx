@@ -25,7 +25,6 @@ export default function () {
 
         initGL(gl);
         initGLSL(gl);
-        handleResize(gl);
         initObjModel(gl);
         startRendering(gl);
     }
@@ -70,7 +69,7 @@ export default function () {
         gl.camera = new PerspectiveCamera(60, canvasWidth / canvasHeight, 0.1, 2000)
         // gl.camera = new OrthographicCamera(-100, 100, 100, -100, 0.1, 2000);
         gl.camera.position.set(0,0,100);
-        gl.cameraController = new CameraOrbitConrols({ camera: gl.camera, canvas: gl.canvas });
+        gl.cameraController = new CameraOrbitConrols({ gl, camera: gl.camera, canvas: gl.canvas });
     }
 
     const startRendering = (gl: WebGLRenderingContext | any) => {
@@ -111,15 +110,6 @@ export default function () {
             twgl.setBuffersAndAttributes(gl, gl.programInfo, gl.objModelBufferInfo);
             twgl.drawBufferInfo(gl, gl.objModelBufferInfo)
         }
-    }
-
-    const handleResize = (gl: WebGLRenderingContext | any) => {
-        // resize window to fit to parent
-        gl.canvas.width = gl.canvas.parentNode.clientWidth;
-        gl.canvas.height = gl.canvas.parentNode.clientHeight;
-
-        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-        // gl.matrixProjection = Matrix4.makePerspective(45, gl.canvas.width / gl.canvas.height, 0.1, 1000);
     }
 
     return <div className="w-[100%] h-[100%]">
