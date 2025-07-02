@@ -5,6 +5,7 @@ import TWGLObjModel from "./TWGLObjModel"
 import TWGLObjModelV2 from "./TWGLObjModelV2"
 import TWGLPlane from "./TWGLPlane"
 import TWGLPoint from "./TWGLPoint"
+import TWGLTwoCamera from "./TWGLTwoCamera"
 import WebGLCamera from "./WebGLCamera"
 import WebGLCube from "./WebGLCube"
 import WebGLInit from "./WebGLInit"
@@ -20,7 +21,8 @@ type Props = {
         'twgl-plane' |
         'twgl-point' | 
         'twgl-line' |
-        'twgl-cyliner'
+        'twgl-cyliner' |
+        'twgl-tow-camera'
 }
 export default function (props: Props) {
     switch (props.type) {
@@ -34,6 +36,7 @@ export default function (props: Props) {
         case 'twgl-point': return <TWGLPoint key="twgl-point" />
         case 'twgl-line': return <TWGLLine key="twgl-line" />
         case 'twgl-cyliner': return <TWGLCyliner key="twgl-cyliner" />
+        case 'twgl-tow-camera': return <TWGLTwoCamera key="twgl-tow-camera" />
     }
     return <div>view</div>
 }

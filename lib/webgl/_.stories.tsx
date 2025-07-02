@@ -74,3 +74,9 @@ export const ViewTwgCyliner: Story = {
         type: 'twgl-cyliner'
     }
 };
+
+export const ViewTwoCamera: Story = {
+    args: {
+        type: 'twgl-tow-camera'
+    }
+};
