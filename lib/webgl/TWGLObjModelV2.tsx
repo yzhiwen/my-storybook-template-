@@ -89,19 +89,18 @@ export default function () {
     }
 
     const drawModel = (gl: WebGLRenderingContext | any) => {
-
-        // set view transform 没有gl.program.uniformLocations.matrixView
         const viewMatrix = gl.camera.viewMatrix;
-        // const viewMatrix = gl.camera.viewMatrix.clone().multiply(gl.cameraController.quaternion.toMatrix());
-        gl.uniformMatrix4fv(gl.programInfo.uniformLocations.matrixView, false, viewMatrix.elements);
-
-        const matrixModel = new Three.Matrix4();
+        const matrixModel = new Three.Matrix4().identity();
+        const projectionMatrix = gl.camera.projectionMatrix
         const modelViewMatrix = viewMatrix.clone().multiply(matrixModel);
-        gl.uniformMatrix4fv(gl.programInfo.uniformLocations.matrixModelView, false, modelViewMatrix.elements);
-
-        gl.matrixModelViewProjection = gl.camera.projectionMatrix.clone().multiply(modelViewMatrix);
-        gl.uniformMatrix4fv(gl.programInfo.uniformLocations.matrixModelViewProjection, false, gl.matrixModelViewProjection.elements);
-
+        const matrixModelViewProjection = projectionMatrix.clone().multiply(modelViewMatrix);
+        const uniforms = {
+            matrixView: viewMatrix.elements,
+            matrixModelView: modelViewMatrix.elements,
+            matrixModelViewProjection: matrixModelViewProjection.elements,
+        };
+        twgl.setUniforms(gl.programInfo, uniforms);
+        
         if (gl.objModelWireframeBufferInfo) {
             twgl.setBuffersAndAttributes(gl, gl.programInfo, gl.objModelWireframeBufferInfo);
             twgl.drawBufferInfo(gl, gl.objModelWireframeBufferInfo, gl.LINES)
