@@ -20,36 +20,11 @@ export const ViewInit: Story = {
     }
 };
 
-export const ViewCube: Story = {
-    args: {
-        type: 'cube'
-    }
-};
-
-export const ViewCamera: Story = {
-    args: {
-        type: 'camera'
-    }
-};
-
-export const ViewTwglInit: Story = {
-    args: {
-        type: 'twgl-init'
-    }
-};
-
 export const ViewTwglObjModel: Story = {
     args: {
         type: 'twgl-objmodel'
     }
 };
-
-export const ViewTwglObjModelV2: Story = {
-    args: {
-        type: 'twgl-objmodel-v2'
-    }
-};
-
 
 export const ViewTwglPlane: Story = {
     args: {
