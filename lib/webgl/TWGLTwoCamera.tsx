@@ -10,7 +10,6 @@ import { Vertice } from "./ts/Vertice.js";
 import { CameraOrbitConrols, OrthographicCamera, PerspectiveCamera } from "./ts/CameraOrbitControls.js";
 
 import * as Three from 'three';
-import { ConstNode } from "three/webgpu";
 
 export default function () {
     const ref = useRef<HTMLCanvasElement>(null!);
@@ -100,6 +99,7 @@ export default function () {
     }
 
     const frame = (gl: WebGLRenderingContext | any) => {
+        gl.camera2.position.applyEuler(new Three.Euler(0.01, 0.01));
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         gl.canvas.width = gl.canvas.clientWidth;
@@ -215,13 +215,14 @@ export default function () {
             [-1, -1, 1]     // bottom-left
         ];
 
-        console.log(gl.camera2.projectionMatrix)
         const vertices: number[] = [];
         points.forEach(point => {
             const projectionMatrix = gl.camera2.projectionMatrix.clone().invert();
             const viewMatrixmatrix = gl.camera2.viewMatrix.clone().invert();
             const matrix = new Three.Matrix4().multiplyMatrices(viewMatrixmatrix, projectionMatrix,)
-            const vec = new Three.Vector3(point[0], point[1], point[2]).applyMatrix4(projectionMatrix);
+            // projectionMatrix一打开的结果是对的，但是相机旋转的话结果有问题。frustm没有朝向target
+            // 改成matrix就正常
+            const vec = new Three.Vector3(point[0], point[1], point[2]).applyMatrix4(matrix);
             vertices.push(vec.x, vec.y, vec.z);
         });
 
