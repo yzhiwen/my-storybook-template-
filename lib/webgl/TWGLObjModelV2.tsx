@@ -10,6 +10,7 @@ import { Vertice } from "./ts/Vertice.js";
 import { CameraOrbitConrols, OrthographicCamera, PerspectiveCamera } from "./ts/CameraOrbitControls.js";
 
 import * as Three from 'three';
+import { Qem } from "./ts/Qem2.js";
 
 export default function () {
     const ref = useRef<HTMLCanvasElement>(null!);
@@ -31,19 +32,42 @@ export default function () {
 
     const initObjModel = (gl: WebGLRenderingContext | any) => {
         gl.model = new ObjModel(gl);
-        gl.model.read("http://localhost:6006/public/models/debugger_50k.obj").then((obj: any) => {
+        gl.model.read("http://localhost:6006/public/models/dinosaur.obj").then((obj: any) => {
             console.log(obj, '-----obj')
 
-            gl.objModelBufferInfo = twgl.createBufferInfoFromArrays(gl, {
-                vertexPosition: obj.vertices,
-                indices: obj.indices,
-                vertexNormal: obj.normals,
-            })
+            // gl.objModelBufferInfo = twgl.createBufferInfoFromArrays(gl, {
+            //     vertexPosition: obj.vertices,
+            //     indices: obj.indices,
+            //     vertexNormal: obj.normals,
+            // })
+
+            // gl.objModelWireframeBufferInfo = twgl.createBufferInfoFromArrays(gl, {
+            //     vertexPosition: obj.vertices,
+            //     indices: { numComponents: 2, data: Vertice.generateWireframeIndices(obj.indices)},
+            //     vertexNormal: obj.normals,
+            // })
+            
+            // const qem = new Qem(obj.vertices, obj.indices);
+            // qem.collapse(1);
+            // const { vertices, indices } = qem.getResult();
+            // gl.objModelWireframeBufferInfo = twgl.createBufferInfoFromArrays(gl, {
+            //     vertexPosition: vertices,
+            //     indices: { numComponents: 2, data: Vertice.generateWireframeIndices(indices as any)},
+            // })
+            // console.log(qem);
+
+            const indicesNew: number[] = []
+            for (let i = 0; i < obj.indices.length; i += 3) {
+                const v1Index = obj.indices[i];
+                const v2Index = obj.indices[i + 1];
+                const v3Index = obj.indices[i + 2];
+
+                indicesNew.push(v1Index, v2Index, v3Index);
+            }
 
             gl.objModelWireframeBufferInfo = twgl.createBufferInfoFromArrays(gl, {
                 vertexPosition: obj.vertices,
-                indices: { numComponents: 2, data: Vertice.generateWireframeIndices(obj.indices)},
-                vertexNormal: obj.normals,
+                indices: { numComponents: 2, data: Vertice.generateWireframeIndices(indicesNew as any)},
             })
         })
     }

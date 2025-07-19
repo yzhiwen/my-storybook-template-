@@ -304,7 +304,7 @@ export class CameraOrbitConrols {
         const panY = deltaY * ratio;
 
         this.panOffset = new Three.Vector3().add(xAxis.clone().multiplyScalar(panX)).add(yAxis.clone().multiplyScalar(panY));
-        console.log('this.panOffset', this.panOffset)
+        // console.log('this.panOffset', this.panOffset)
     }
 
     panOrthographicCamera(options: any) {
@@ -388,9 +388,9 @@ export class CameraOrbitConrols {
         this.spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, this.spherical.phi));
 
         this.rotateOffset = this.spherical.getVec3FromSphericalCoords()
-        console.log('deltaX, deltaY', deltaX, deltaY)
-        console.log('phi theta', this.spherical.phi, this.spherical.theta)
-        console.log('rotateOffset', this.rotateOffset)
+        // console.log('deltaX, deltaY', deltaX, deltaY)
+        // console.log('phi theta', this.spherical.phi, this.spherical.theta)
+        // console.log('rotateOffset', this.rotateOffset)
 
         this.camera.position.copy(this.rotateOffset);
         this.camera.position.copy(this.camera.target.clone().add(this.rotateOffset));
@@ -467,7 +467,7 @@ export class CameraOrbitConrols {
 
         _sphericalDelta.set(0, 0, 0);
 
-        console.log("camera", this.camera.position,)
+        // console.log("camera", this.camera.position,)
     }
 
     update() {
